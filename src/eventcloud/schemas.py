@@ -1,0 +1,31 @@
+# schemas.py
+from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+
+class EventCreate(BaseModel):
+    title: str
+    description: str
+    code: str
+
+class EventRead(BaseModel):
+    code: str
+    title: str
+    description: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class EventMessageImageRead(BaseModel):
+    uuid: str
+    image_key: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class EventMessageCreate(BaseModel):
+    text: str
+
+class EventMessageImageCreate(BaseModel):
+    image_key: str
