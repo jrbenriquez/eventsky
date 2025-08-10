@@ -1,0 +1,23 @@
+<div
+  id="infinite-scroll"
+  role="button"
+  aria-label="Load older messages"
+  class="cursor-pointer mx-auto my-4 w-fit pt-4 border-t border-gray-200
+         flex items-center gap-1 text-sm text-gray-500
+         hover:text-gray-700 hover:underline cursor-pointer select-none
+         focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 rounded"
+  hx-get="/event/{{ event_code }}/messages?before_id={{ before_id }}&limit={{ limit }}"
+  hx-trigger="click"
+  hx-swap="beforeend"
+  hx-target="#messages"
+  hx-vals='{"context":"older"}'
+  hx-on="htmx:afterRequest:
+           if (event.detail.xhr && event.detail.xhr.status >= 200 && event.detail.xhr.status < 400) this.remove();"
+>
+  <!-- chevron icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+       class="size-4 opacity-70" fill="currentColor" aria-hidden="true">
+    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.16l3.71-2.93a.75.75 0 11.94 1.17l-4.2 3.32a.75.75 0 01-.94 0l-4.2-3.32a.75.75 0 01-.02-1.06z" clip-rule="evenodd"/>
+  </svg>
+  <span>Load older</span>
+</div>

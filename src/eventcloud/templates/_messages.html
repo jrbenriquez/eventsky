@@ -16,7 +16,11 @@
             </center>
         </div>
     {% endfor %}
-    <div class="bg-white shadow rounded p-3 text-gray-800">{{ msg.text }}</div>
+    <div class="block bg-white shadow rounded p-3 text-gray-800 w-full">
+        {{ msg.text }}
+        <div class="text-xs flex justify-end right-0 text-gray-600">{{ msg.created_at }}</div>
+    </div>
 {% else %}
-    <div class="text-center mt-12 text-lg font-medium text-gray-700">No messages yet</div>
+    <div id="empty-state"
+         class="text-center mt-12 text-lg font-medium text-gray-700">No messages yet</div>
 {% endfor %}

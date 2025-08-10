@@ -3,52 +3,62 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport"
-              content="width=device-width, initial-scale=1, maximum-scale=1" />
+              content="width=device-width, initial-scale=1, viewport-fit=cover">
         <title>{{ event.title }}</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+        <style>html{-webkit-text-size-adjust:100%}</style>
     </head>
-    <body class="bg-gray-50 min-h-screen flex flex-col">
+    <body class="bg-gray-50 h-[100svh] overflow-hidden flex flex-col">
         <!-- Event Header -->
-        <header id="eventTitle" class="text-center mt-6 px-4">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">{{ event.title }}</h1>
-            <p class="text-gray-600 mt-2 text-sm sm:text-base">{{ event.description }}</p>
+        <header id="eventTitle"
+                class="sticky top-0 bg-gray-50 z-10 text-center px-4 pt-6">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">{{ event.title }}</h1>
+            <p class="text-gray-600 mt-2 text-base">{{ event.description }}</p>
             <small class="text-xs text-gray-400 block mt-1">Created at: {{ event.created_at }}</small>
         </header>
         <!-- Messages -->
         <main id="messages"
-              class="max-w-xl mx-auto mt-4 px-4 pb-32 space-y-2 overflow-y-auto"
-              hx-get="/event/{{ event.code }}/messages"
-              hx-trigger="every 3s"
-              hx-swap="innerHTML">
+              class="w-full flex-1 overflow-y-auto mx-auto pt-8 px-4 pb-36 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              hx-ext="sse"
+              sse-connect="/event/{{ event.code }}/stream"
+              sse-swap="message"
+              hx-vals='{"context": "new"}'
+              hx-swap="afterbegin">
             {% include "_messages.html" %}
+            {% if messages %}
+                <div id="infinite-scroll"
+                     hx-get="/event/{{ event.code }}/check_older/?before_id={{ messages[-1].uuid }}&limit=10"
+                     hx-trigger="load"
+                     hx-swap="outerHTML"></div>
+            {% endif %}
         </main>
         <!-- Fixed bottom input -->
         <div class="sticky bottom-0 left-0 w-full bg-white py-3 shadow-inner">
             <form hx-post="/message/{{ event.code }}/"
-                  class="max-w-xl mx-auto w-full px-4"
+                  class="mx-auto w-full px-4 max-w-xl sm:max-w-2xl lg:max-w-3xl"
                   hx-swap="none"
-                  hx-on="htmx:afterRequest: this.reset(); badge.classList.add('hidden'); scrollToTop(); ">
-            
-                <div class="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                  hx-on="htmx:afterRequest: this.reset(); handleAfterSubmit(); ">
+                <div class="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2 bg-white">
                     <!-- Upload Icon with badge -->
-                    <div class="relative">
+                    <div class="relative inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0">
                         <button type="button"
                                 onclick="uploadFile()"
-                                class="text-gray-500 hover:text-gray-700 shrink-0"
-                                title="Upload photo">
+                                title="Upload photo"
+                                class="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 p-0 leading-none text-gray-500 hover:text-gray-700">
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                 class="h-5 w-5 sm:h-6 sm:w-6"
-                                 fill="none"
+                                 class="block w-5 h-5 sm:w-6 sm:h-6"
                                  viewBox="0 0 24 24"
+                                 fill="none"
                                  stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h2l1-2h8l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </button>
-                        <!-- Badge -->
+                        <!-- Badge (kept absolute) -->
                         <span id="fileBadge"
-                              class="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center hidden"></span>
+                              class="pointer-events-none absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center hidden"></span>
                     </div>
                     <!-- File Input for Image -->
                     <input type="file"
@@ -58,13 +68,16 @@
                            multiple
                            onchange="handleFileUpload(event)" />
                     <!-- Text Input -->
-                    <input type="text"
+                    <input id="msgText"
+                           type="text"
                            name="text"
                            placeholder="Type your message..."
+                           oninput="updateSendDisabled()"
                            class="flex-1 text-base sm:text-base border-none outline-none bg-transparent" />
                     <!-- Send Button (Heroicon Paper Airplane) -->
-                    <button type="submit"
-                            class="text-blue-500 hover:text-blue-700 shrink-0"
+                    <button id="sendBtn"
+                            type="submit"
+                            class="text-blue-500 hover:text-blue-700 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
                             title="Send message">
                         <svg xmlns="http://www.w3.org/2000/svg"
                              class="h-5 w-5 sm:h-6 sm:w-6"
@@ -76,6 +89,16 @@
                     </button>
                 </div>
             </form>
+        </div>
+        <div id="lightbox"
+             class="fixed inset-0 z-[9999] hidden bg-black/80 p-4 flex items-center justify-center">
+            <button id="lightbox-close"
+                    class="absolute top-3 right-3 rounded-full bg-white/90 px-3 py-1 text-sm text-gray-800 shadow">
+                Close
+            </button>
+            <img id="lightbox-img"
+                 alt=""
+                 class="max-w-full max-h-full rounded-lg object-contain select-none" />
         </div>
     </body>
     <script>
@@ -156,8 +179,36 @@
         await Promise.all(Array.from(files).map(processFile));
 
       }
-    function scrollToTop() {
-      document.getElementById("eventTitle").scrollIntoView({ behavior: "smooth" });
+
+    function handleAfterSubmit() {
+      {% if not messages %}
+        document.getElementById('empty-state')?.remove();
+      {% endif %}
+      document.getElementById('fileBadge')?.classList.add('hidden');; 
+      const el = document.getElementById("messages");
+      if (el) el.scrollTop = 0; // top for timeline
     }
+    function updateSendDisabled() {
+        const v = document.getElementById('msgText').value.trim();
+        document.getElementById('sendBtn').disabled = v.length === 0;
+      }
+      // init on load
+      updateSendDisabled();
     </script>
+  <script>
+    function openLightbox(src){ const lb=document.getElementById('lightbox'); const img=document.getElementById('lightbox-img'); img.src=src; lb.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
+    function closeLightbox(){ const lb=document.getElementById('lightbox'); const img=document.getElementById('lightbox-img'); lb.classList.add('hidden'); img.src=''; document.body.classList.remove('overflow-hidden'); }
+
+    // Open on click (delegated so HTMX/SSE inserts work)
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-lightbox-src]');
+      if (t) { e.preventDefault(); openLightbox(t.getAttribute('data-lightbox-src') || t.src); }
+    });
+
+    // Close on overlay click / button / Esc
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox' || e.target.id === 'lightbox-close') closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+  </script>
 </html>
