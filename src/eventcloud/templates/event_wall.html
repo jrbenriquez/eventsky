@@ -19,7 +19,7 @@
         <main id="messages"
               class="max-w-xl mx-auto mt-4 px-4 pb-32 space-y-2 overflow-y-auto"
               hx-get="/event/{{ event.code }}/messages"
-              hx-trigger="every 5s"
+              hx-trigger="every 3s"
               hx-swap="innerHTML">
             {% include "_messages.html" %}
         </main>
