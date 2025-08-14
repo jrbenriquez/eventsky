@@ -26,7 +26,9 @@ services:
       poetry config virtualenvs.create false
       poetry install --only main --no-interaction --no-ansi
 
-    preDeployCommand: alembic upgrade head
+    preDeployCommand: |
+      cd src/eventcloud
+      alembic upgrade head
 
     # Gunicorn + Uvicorn workers (prod-ready)
     startCommand: >
