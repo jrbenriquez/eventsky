@@ -1,6 +1,299 @@
 <!DOCTYPE html>
-<html>
-  <head><title>{{ title }}</title></head>
-  <body><h1>Welcome to EventCloud 🎉</h1></body>
-</html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{{ title or 'EventSky — Simple live walls for your events' }}</title>
 
+    <!-- SEO / Social -->
+    <meta name="description" content="EventSky lets guests post messages and photos to a live wall during your event. Simple, fast, and privacy‑friendly." />
+    <meta property="og:title" content="EventSky — Simple live walls for your events" />
+    <meta property="og:description" content="Collect messages and photos in real time. Moderate with one tap. Display beautifully on any screen." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/static/og-eventsky.png" />
+    <meta name="theme-color" content="#0ea5e9" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>html{-webkit-text-size-adjust:100%}</style>
+  </head>
+  <body class="bg-white text-gray-800 antialiased dark:bg-gray-950 dark:text-gray-100">
+    <!-- Top Notification / Beta badge (optional) -->
+    <div class="hidden sm:block text-center text-xs py-2 bg-gradient-to-r from-sky-500 to-cyan-400 text-white">
+      <span class="font-semibold">Beta</span> — We’re polishing things. Your feedback helps!
+    </div>
+
+    <!-- NAVBAR -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur dark:bg-gray-950/80 border-b border-gray-100 dark:border-gray-900">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+          <a href="/" class="flex items-center gap-2">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500 text-white font-bold">E</span>
+            <span class="text-lg font-semibold tracking-tight">EventSky</span>
+          </a>
+          <nav class="hidden md:flex items-center gap-8 text-sm">
+            <a href="#features" class="hover:text-sky-600">Features</a>
+            <a href="#how" class="hover:text-sky-600">How it works</a>
+            <a href="#pricing" class="hover:text-sky-600">Pricing</a>
+            <a href="#faq" class="hover:text-sky-600">FAQ</a>
+          </nav>
+          <div class="hidden md:flex items-center gap-3">
+            <a href="/login" class="text-sm hover:text-sky-600">Sign in</a>
+            <a href="#" class="inline-flex items-center rounded-xl bg-gray-900 px-3.5 py-2 text-sm font-semibold text-white shadow hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100">Create an event</a>
+          </div>
+          <!-- Mobile -->
+          <button id="mobile-open" class="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="mobile-menu" class="md:hidden hidden border-t border-gray-100 dark:border-gray-900">
+        <div class="px-4 py-3 space-y-2">
+          <a href="#features" class="block py-2">Features</a>
+          <a href="#how" class="block py-2">How it works</a>
+          <a href="#pricing" class="block py-2">Pricing</a>
+          <a href="#faq" class="block py-2">FAQ</a>
+          <div class="pt-2 flex gap-2">
+            <a href="/login" class="flex-1 text-center rounded-lg border border-gray-200 dark:border-gray-800 py-2">Sign in</a>
+            <a href="#" class="flex-1 text-center rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 py-2">Create event</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-0 -z-10 opacity-60 [mask-image:radial-gradient(60%_60%_at_50%_20%,black,transparent)]">
+        <div class="absolute -top-24 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-sky-200 via-sky-100 to-cyan-100 dark:from-sky-900/40 dark:via-sky-800/30 dark:to-cyan-900/20 blur-3xl"></div>
+      </div>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-16">
+        <div class="grid lg:grid-cols-12 gap-10 items-center">
+          <div class="lg:col-span-7">
+            <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-800 px-3 py-1 text-xs">
+              <span class="inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              <span>Real‑time by design</span>
+            </div>
+            <h1 class="mt-4 text-4xl sm:text-5xl font-bold tracking-tight leading-tight">A live message wall for your events.</h1>
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl">EventSky makes it effortless to collect messages and photos from your crowd and display them instantly—no logins, no apps, just a link or QR code.</p>
+            <div class="mt-8 flex flex-wrap items-center gap-3">
+              <a href="#" class="inline-flex items-center rounded-2xl bg-sky-600 px-5 py-3 text-white font-semibold shadow hover:bg-sky-700">Create your first event</a>
+              <a href="/demo" class="inline-flex items-center rounded-2xl border border-gray-300 px-5 py-3 font-semibold hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900">See a live demo</a>
+            </div>
+            <p class="mt-3 text-xs text-gray-500">No sign‑up required for guests. Works great on any screen.</p>
+          </div>
+          <div class="lg:col-span-5">
+            <!-- Mockup card -->
+            <div class="relative rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/60 dark:bg-gray-950/60 backdrop-blur p-4 shadow-lg">
+              <div class="rounded-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 p-4">
+                <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">Event feed</div>
+                <div class="mt-3 space-y-3">
+                  <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                    <div class="font-semibold">Alex</div>
+                    <div>Congrats! Drop your photos here 📸</div>
+                    <div class="mt-1 text-xs text-gray-500">Just now</div>
+                  </div>
+                  <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                    <div class="font-semibold">Sam</div>
+                    <div class="aspect-[16/9] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-900"></div>
+                    <div class="mt-1 text-xs text-gray-500">1m ago</div>
+                  </div>
+                  <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                    <div class="font-semibold">Guest</div>
+                    <div>Best wishes from table 8! 🎉</div>
+                    <div class="mt-1 text-xs text-gray-500">3m ago</div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute -inset-x-6 -bottom-6 -z-10 blur-2xl opacity-40 bg-sky-500/20 h-16 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOCIAL PROOF / LOGOS -->
+    <section aria-label="Trusted by" class="py-10 border-y border-gray-100 dark:border-gray-900 bg-white/60 dark:bg-gray-950/60">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-sm text-gray-500">Used at weddings, conferences, meetups, and school events</p>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-bold tracking-tight">Everything you need, nothing you don’t</h2>
+          <p class="mt-3 text-gray-600 dark:text-gray-300">Built to be fast, reliable, and moderator‑friendly.</p>
+        </div>
+        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <article class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">⚡</div>
+            <h3 class="font-semibold">Real‑time feed</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Messages and photos appear instantly via server‑sent events. No refresh needed.</p>
+          </article>
+          <article class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">🖼️</div>
+            <h3 class="font-semibold">Photo uploads</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Guests can post snapshots straight from their phones. Lightbox included.</p>
+          </article>
+          <article class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">🛡️</div>
+            <h3 class="font-semibold">Quick moderation</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Approve or remove posts in one tap. Keep your wall clean and welcoming.</p>
+          </article>
+          <article class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">🔒</div>
+            <h3 class="font-semibold">Privacy‑first</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No accounts for guests. You control retention and visibility.</p>
+          </article>
+          <article class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">📱</div>
+            <h3 class="font-semibold">Beautiful on any screen</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Looks great on phones and shines on projectors and TVs.</p>
+          </article>
+          <article class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">🔗</div>
+            <h3 class="font-semibold">Share with a QR</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Open your event to everyone in seconds: share a link or QR code.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="py-20 border-y border-gray-100 dark:border-gray-900 bg-gray-50/60 dark:bg-gray-950/40">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-bold tracking-tight">Run an event in 4 steps</h2>
+        </div>
+        <ol class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 counter-reset">
+          <li class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="text-xs uppercase tracking-wide text-gray-500">Step 1</div>
+            <h3 class="mt-1 font-semibold">Create your event</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Set a title and description. You’ll get a unique link and code.</p>
+          </li>
+          <li class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="text-xs uppercase tracking-wide text-gray-500">Step 2</div>
+            <h3 class="mt-1 font-semibold">Share the QR</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Print it or show it on screen so guests can scan and post.</p>
+          </li>
+          <li class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="text-xs uppercase tracking-wide text-gray-500">Step 3</div>
+            <h3 class="mt-1 font-semibold">Collect posts</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Messages and photos appear instantly in your feed.</p>
+          </li>
+          <li class="rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+            <div class="text-xs uppercase tracking-wide text-gray-500">Step 4</div>
+            <h3 class="mt-1 font-semibold">Display the wall</h3>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Cast the wall on any screen with auto‑refresh and lightbox.</p>
+          </li>
+        </ol>
+        <div class="mt-10 text-center">
+          <a href="#" class="inline-flex items-center rounded-2xl bg-gray-900 px-5 py-3 text-white font-semibold hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100">Get started free</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing" class="py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-bold tracking-tight">Simple pricing</h2>
+          <p class="mt-3 text-gray-600 dark:text-gray-300">Start free. Upgrade when you need more.</p>
+        </div>
+        <div class="mt-10 grid gap-6 md:grid-cols-2">
+          <!-- Free -->
+          <div class="rounded-3xl border border-gray-200 dark:border-gray-800 p-6">
+            <h3 class="text-xl font-semibold">Free</h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Great for small gatherings and quick tests.</p>
+            <div class="mt-4 text-4xl font-bold">₱0<span class="text-base font-normal text-gray-500"> / event</span></div>
+            <ul class="mt-5 space-y-2 text-sm">
+              <li>• Unlimited messages</li>
+              <li>• Photo uploads</li>
+              <li>• Basic moderation</li>
+            </ul>
+            <a href="#" class="mt-6 inline-flex items-center rounded-xl bg-sky-600 px-4 py-2 text-white font-semibold hover:bg-sky-700">Create an event</a>
+          </div>
+          <!-- Pro -->
+          <div class="relative rounded-3xl border-2 border-sky-600 p-6">
+            <div class="absolute -top-3 right-4 rounded-full bg-sky-600 px-2 py-1 text-xs font-semibold text-white">Popular</div>
+            <h3 class="text-xl font-semibold">Pro</h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">For weddings, conferences, and school events.</p>
+            <div class="mt-4 text-4xl font-bold">₱499<span class="text-base font-normal text-gray-500"> / event</span></div>
+            <ul class="mt-5 space-y-2 text-sm">
+              <li>• Priority moderation tools</li>
+              <li>• Custom wall theme</li>
+              <li>• Export & archiving</li>
+            </ul>
+            <a href="#?plan=pro" class="mt-6 inline-flex items-center rounded-xl bg-gray-900 px-4 py-2 text-white font-semibold hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100">Go Pro</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-20 border-t border-gray-100 dark:border-gray-900 bg-gray-50/60 dark:bg-gray-950/40">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-bold tracking-tight">Frequently asked</h2>
+        </div>
+        <div class="mt-10 grid md:grid-cols-2 gap-6">
+          <details class="group rounded-2xl border border-gray-200 dark:border-gray-800 p-5 open:bg-white/50 dark:open:bg-gray-950/50">
+            <summary class="cursor-pointer font-semibold flex items-center justify-between">Do guests need an account?
+              <span class="ml-3 transition group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No. Guests open your link or scan a QR and post right away.</p>
+          </details>
+          <details class="group rounded-2xl border border-gray-200 dark:border-gray-800 p-5 open:bg-white/50 dark:open:bg-gray-950/50">
+            <summary class="cursor-pointer font-semibold flex items-center justify-between">Can I moderate posts?
+              <span class="ml-3 transition group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Yes. Approve, hide, or delete in a tap. You’re in control.</p>
+          </details>
+          <details class="group rounded-2xl border border-gray-200 dark:border-gray-800 p-5 open:bg-white/50 dark:open:bg-gray-950/50">
+            <summary class="cursor-pointer font-semibold flex items-center justify-between">Does it work on a projector/TV?
+              <span class="ml-3 transition group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Absolutely. Open the wall URL in any modern browser.</p>
+          </details>
+          <details class="group rounded-2xl border border-gray-200 dark:border-gray-800 p-5 open:bg-white/50 dark:open:bg-gray-950/50">
+            <summary class="cursor-pointer font-semibold flex items-center justify-between">Where are the photos stored?
+              <span class="ml-3 transition group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">We use object storage. You can export or purge your data anytime.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA FOOTER -->
+    <section class="py-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Ready to try EventSky?</h2>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">Spin up an event, share the QR, and watch the wall come alive.</p>
+        <div class="mt-6">
+          <a href="#" class="inline-flex items-center rounded-2xl bg-sky-600 px-6 py-3 text-white font-semibold shadow hover:bg-sky-700">Create an event</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="border-t border-gray-100 dark:border-gray-900 py-10 text-sm">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-gray-500">© {{ year or 2025 }} EventSky. All rights reserved.</p>
+        <nav class="flex items-center gap-4 text-gray-500">
+          <a href="/legal/terms" class="hover:text-gray-700 dark:hover:text-gray-300">Terms</a>
+          <a href="/legal/privacy" class="hover:text-gray-700 dark:hover:text-gray-300">Privacy</a>
+          <a href="mailto:johnrei.enriquez@gmail.com" class="hover:text-gray-700 dark:hover:text-gray-300">Contact</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script>
+      // Simple mobile menu toggle
+      const openBtn = document.getElementById('mobile-open');
+      const menu = document.getElementById('mobile-menu');
+      if (openBtn && menu) {
+        openBtn.addEventListener('click', () => menu.classList.toggle('hidden'));
+      }
+    </script>
+  </body>
+</html>
