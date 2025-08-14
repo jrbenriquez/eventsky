@@ -259,3 +259,7 @@ def check_older_message(request: air.Request, code: str, before_id: str, limit: 
         "before_id": before_id,
         "limit": limit,
     })
+
+@app.get("/healthz")
+def healthz():
+    return JSONResponse({"ok": True})
