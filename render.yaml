@@ -16,7 +16,7 @@ services:
       - key: PYTHONPATH
         value: ./src          # so "eventcloud.app" is importable
       - key: WEB_CONCURRENCY
-        value: "4"            # tweak per load
+        value: "1"            # tweak per load
       - key: POETRY_VERSION
         value: "2.0.1"
 
