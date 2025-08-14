@@ -9,7 +9,7 @@ services:
     healthCheckPath: /healthz
 
     envVars:
-      - key: ENV
+      - key: ENVIRONMENT
         value: production
       - key: PYTHON_VERSION
         value: 3.12.4
