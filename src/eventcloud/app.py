@@ -1,30 +1,27 @@
 import asyncio
 import os
 from datetime import datetime, timezone
-from typing import Union
+from pathlib import Path
 from uuid import uuid4
 
 import air
 from air.responses import JSONResponse, RedirectResponse, Response
 from fastapi.responses import StreamingResponse
-from sqlalchemy import desc
+from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm import selectinload
-from sqlalchemy import and_
-from sqlalchemy import or_
 
 from eventcloud.db import SessionLocal
 from eventcloud.event_broker import broker
 from eventcloud.models import Event, EventMessage, EventMessageImage
 from eventcloud.r2 import generate_presigned_upload_url, get_signed_url_for_key
-from eventcloud.schemas import (EventCreate, EventMessageCreate,
-                                EventMessageImageCreate)
+from eventcloud.schemas import EventCreate, EventMessageCreate, EventMessageImageCreate
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = Path(__file__).resolve().parent
 
 
 app = air.Air()
 
-jinja = air.JinjaRenderer(directory="templates")
+jinja = air.JinjaRenderer(directory=str(BASE_DIR / "templates"))
 
 
 @app.get("/")
@@ -86,10 +83,9 @@ def list_events(request: air.Request):
 
 
 @app.get("/event/{code}/messages")
-def get_messages(request: air.Request, code: str,
-                 before_id: str | None = None,
-                 limit: int = 10):
-
+def get_messages(
+    request: air.Request, code: str, before_id: str | None = None, limit: int = 10
+):
     db = SessionLocal()
 
     q = (
@@ -102,42 +98,46 @@ def get_messages(request: air.Request, code: str,
         # Use (created_at, uuid) as a stable cursor
         pivot = (
             db.query(EventMessage.created_at, EventMessage.uuid)
-              .filter_by(uuid=before_id)
-              .first()
+            .filter_by(uuid=before_id)
+            .first()
         )
         if pivot:
             ca, uid = pivot
             q = q.filter(
                 or_(
                     EventMessage.created_at < ca,
-                    and_(EventMessage.created_at == ca,
-                         EventMessage.uuid < uid)
+                    and_(EventMessage.created_at == ca, EventMessage.uuid < uid),
                 )
             )
 
     # Grab the next page newest->oldest, then flip to oldest->newest for display
     rows = (
         q.order_by(EventMessage.created_at.desc(), EventMessage.uuid.desc())
-         .limit(limit)
-         .all()
+        .limit(limit)
+        .all()
     )
     # Oldest in this chunk becomes the next 'before_id'
     next_before_id = rows[0].uuid if rows else None
 
     db.close()
 
-    return jinja(request, "_messages_load_chunk.html", {
-        "messages": rows,
-        "event_code": code,
-        "next_before_id": next_before_id,
-    })
+    return jinja(
+        request,
+        "_messages_load_chunk.html",
+        {
+            "messages": rows,
+            "event_code": code,
+            "next_before_id": next_before_id,
+        },
+    )
+
 
 @app.post("/message/{event_code}/")
 async def send_message(request: air.Request, event_code: str):
     form_data = await request.form()
     message_data = {
         "text": str(form_data.get("text")),
-        "sender_name": str(form_data.get("sender_name"))
+        "sender_name": str(form_data.get("sender_name")),
     }
 
     image_keys = form_data.getlist("image_keys")
@@ -224,15 +224,19 @@ async def event_stream(request: air.Request, code: str):
             "Connection": "keep-alive",
         },
     )
+
+
 @app.get("/event/{code}/check_older/")
-def check_older_message(request: air.Request, code: str, before_id: str, limit: int = 10):
+def check_older_message(
+    request: air.Request, code: str, before_id: str, limit: int = 10
+):
     """Checks for older messages and if yes returns the older button indicator"""
     db = SessionLocal()
 
     pivot = (
         db.query(EventMessage.created_at, EventMessage.uuid)
-          .filter_by(uuid=before_id)
-          .first()
+        .filter_by(uuid=before_id)
+        .first()
     )
     if not pivot:
         db.close()
@@ -241,11 +245,15 @@ def check_older_message(request: air.Request, code: str, before_id: str, limit: 
     ca, uid = pivot
     has_more = (
         db.query(EventMessage.uuid)
-          .filter_by(event_id=code)
-          .filter(or_(EventMessage.created_at < ca,
-                      and_(EventMessage.created_at == ca, EventMessage.uuid < uid)))
-          .limit(1)
-          .first()
+        .filter_by(event_id=code)
+        .filter(
+            or_(
+                EventMessage.created_at < ca,
+                and_(EventMessage.created_at == ca, EventMessage.uuid < uid),
+            )
+        )
+        .limit(1)
+        .first()
         is not None
     )
 
@@ -254,11 +262,16 @@ def check_older_message(request: air.Request, code: str, before_id: str, limit: 
         return Response("", 204)  # no button
 
     # Return just the button HTML
-    return jinja(request, "_older_button.html", {
-        "event_code": code,
-        "before_id": before_id,
-        "limit": limit,
-    })
+    return jinja(
+        request,
+        "_older_button.html",
+        {
+            "event_code": code,
+            "before_id": before_id,
+            "limit": limit,
+        },
+    )
+
 
 @app.get("/healthz")
 def healthz():
