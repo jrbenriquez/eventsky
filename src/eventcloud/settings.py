@@ -1,5 +1,6 @@
 from typing import Annotated
 from pydantic import Field
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -8,6 +9,14 @@ class Settings(BaseSettings):
 
     # === Database ===
     database_url: str = Field(default=..., validation_alias="DATABASE_URL")
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_pg_scheme(cls, v: str) -> str:
+        # Render/Heroku sometimes provide 'postgres://'
+        if v and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+psycopg://", 1)
+        return v
 
     # === R2 / S3 ===
     r2_access_key_id: str = Field(default=..., validation_alias="CLOUDFLARE_R2_ACCESS_KEY_ID")

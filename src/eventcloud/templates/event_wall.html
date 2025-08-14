@@ -8,6 +8,8 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
         <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
         <style>html{-webkit-text-size-adjust:100%}</style>
     </head>
     <body class="bg-gray-50 h-[100svh] overflow-hidden flex flex-col">
@@ -39,7 +41,7 @@
             <form hx-post="/message/{{ event.code }}/"
                   class="mx-auto w-full px-4 max-w-xl sm:max-w-2xl lg:max-w-3xl"
                   hx-swap="none"
-                  hx-on="htmx:afterRequest: this.reset(); handleAfterSubmit(); ">
+                  hx-on=" htmx:beforeRequest: if(!ensureGuestName(event)){return}; htmx:afterRequest: clearMessageForm(); handleAfterSubmit(); ">
                 <div class="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2 bg-white">
                     <!-- Upload Icon with badge -->
                     <div class="relative inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0">
@@ -67,6 +69,7 @@
                            class="hidden"
                            multiple
                            onchange="handleFileUpload(event)" />
+                    <input type="hidden" id="guestNameField" name="sender_name" value="">
                     <!-- Text Input -->
                     <input id="msgText"
                            type="text"
@@ -99,6 +102,23 @@
             <img id="lightbox-img"
                  alt=""
                  class="max-w-full max-h-full rounded-lg object-contain select-none" />
+        </div>
+        <!-- Overlay for guest name -->
+        <div id="nameOverlay"
+             class="fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-3">Hi there! Please enter your name</h2>
+                <p class="text-sm text-gray-600 mb-4">We'll remember this for next time.</p>
+                <input id="guestNameInput"
+                       type="text"
+                       placeholder="Your name"
+                       class="w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring"
+                       onkeypress="if(event.key==='Enter'){saveGuestName()}">
+                <button onclick="saveGuestName()"
+                        class="w-full bg-black hover:bg-gray-600 text-white font-semibold py-2 rounded disabled:opacity-50">
+                    Save
+                </button>
+            </div>
         </div>
     </body>
     <script>
@@ -189,13 +209,21 @@
       if (el) el.scrollTop = 0; // top for timeline
     }
     function updateSendDisabled() {
-        const v = document.getElementById('msgText').value.trim();
-        document.getElementById('sendBtn').disabled = v.length === 0;
-      }
+      const textOk = (document.getElementById('msgText')?.value || '').trim().length > 0;
+      const guestName = document.getElementById('guestNameField').value.trim();
+      const guestNameOk = guestName.length > 0;
+      const storedName = (localStorage.getItem('guestName') || '').trim();
+      const storedNameOk = storedName.length >0;
+      const btn = document.getElementById('sendBtn');
+      // Using this less chances of guests encountering bugs
+      if (btn) btn.disabled = !(textOk && guestNameOk);
+      // Use this one if we are going with more improvements
+      // if (btn) btn.disabled = !(textOk && guestNameOk && storedNameOk && storedName === guestName);
+    }
       // init on load
       updateSendDisabled();
     </script>
-  <script>
+    <script>
     function openLightbox(src){ const lb=document.getElementById('lightbox'); const img=document.getElementById('lightbox-img'); img.src=src; lb.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
     function closeLightbox(){ const lb=document.getElementById('lightbox'); const img=document.getElementById('lightbox-img'); lb.classList.add('hidden'); img.src=''; document.body.classList.remove('overflow-hidden'); }
 
@@ -210,5 +238,110 @@
       if (e.target.id === 'lightbox' || e.target.id === 'lightbox-close') closeLightbox();
     });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
-  </script>
+    </script>
+    <script>
+      // Save guest name script
+      document.addEventListener("DOMContentLoaded", () => {
+        const savedName = localStorage.getItem("guestName");
+        if (!savedName) {
+          document.getElementById("nameOverlay").classList.remove("hidden");
+        } else {
+          addNameToForm(savedName);
+          updateMsgPlaceholder(savedName);
+        }
+      });
+
+      function saveGuestName() {
+        const input = document.getElementById("guestNameInput");
+        const name = input.value.trim();
+        if (!name) return;
+
+        localStorage.setItem("guestName", name);
+        addNameToForm(name);
+        updateMsgPlaceholder(name);
+        document.getElementById("nameOverlay").classList.add("hidden");
+        updateSendDisabled();
+      }
+
+      function addNameToForm(name) {
+        document.getElementById("guestNameField").value = name;
+      };
+      function updateMsgPlaceholder(name) {
+        const msgField = document.getElementById("msgText");
+        if (msgField) {
+          msgField.placeholder = `Sending message as ${name}`;
+        }
+      }
+
+      function ensureGuestName(evt){
+          const name = (localStorage.getItem('guestName') || '').trim();
+          if (!name){
+            evt.preventDefault(); // blocks the HTMX request
+            document.getElementById('nameOverlay').classList.remove('hidden');
+            setTimeout(() => document.getElementById('guestNameInput')?.focus(), 0);
+            return false;
+          }
+          ensureNameInForm();
+          return true;
+      }
+      function ensureNameInForm(){
+        const name = (localStorage.getItem('guestName') || '').trim();
+        const field = document.getElementById('guestNameField');
+        if (field && name) field.value = name;
+      }
+      // Keep placeholder in sync if guestName changes in another tab
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'guestName') {
+          const newName = e.newValue || '';
+          addNameToForm(newName);
+          updateMsgPlaceholder(newName);
+          updateSendDisabled();
+        }
+      });
+      function clearMessageForm() {
+        // clear text input
+        const msgText = document.getElementById('msgText');
+        if (msgText) msgText.value = '';
+
+        // clear file input
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) fileInput.value = '';
+
+        // remove any dynamically added image_keys inputs
+        document.querySelectorAll('input[name="image_keys"]').forEach(n => n.remove());
+
+        // hide the file badge
+        const badge = document.getElementById('fileBadge');
+        if (badge) badge.classList.add('hidden');
+
+        // keep guest name as-is but ensure hidden field is synced
+        const name = (localStorage.getItem('guestName') || '').trim();
+        const guestNameField = document.getElementById('guestNameField');
+        if (guestNameField) guestNameField.value = name;
+
+        // update placeholder
+        if (msgText && name) {
+          msgText.placeholder = `Sending message as ${name}`;
+        }
+      }
+    </script>
+    <script>
+      dayjs.extend(dayjs_plugin_utc);
+
+      function formatMsgTimes(root) {
+        root.querySelectorAll('.msgTime').forEach(el => {
+          el.textContent = dayjs.utc(el.dataset.utc).local().format('MMM D, YYYY h:mm A');
+        });
+      }
+
+      // Initial page load
+      document.addEventListener('DOMContentLoaded', () => formatMsgTimes(document));
+
+      // Any new fragment loaded by HTMX (SSE, infinite scroll, etc.)
+      if (window.htmx) {
+        htmx.onLoad((fragment) => {
+          formatMsgTimes(fragment);
+        });
+      }
+    </script>
 </html>

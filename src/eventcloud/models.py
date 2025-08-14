@@ -19,6 +19,7 @@ class EventMessage(Base):
     event_id = Column(String, ForeignKey("events.code", name="fk_eventmessages_event"), nullable=False)
     text = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    sender_name = Column(String, nullable=True)
 
     images = relationship("EventMessageImage", back_populates="event_message")
 

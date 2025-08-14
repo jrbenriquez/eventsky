@@ -19,6 +19,7 @@ class EventRead(BaseModel):
 class EventMessageImageRead(BaseModel):
     uuid: str
     image_key: str
+    sender_name: str
     created_at: datetime
 
     class Config:
@@ -26,6 +27,7 @@ class EventMessageImageRead(BaseModel):
 
 class EventMessageCreate(BaseModel):
     text: str
+    sender_name: str
 
 class EventMessageImageCreate(BaseModel):
     image_key: str

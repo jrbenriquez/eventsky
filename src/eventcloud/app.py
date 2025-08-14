@@ -137,6 +137,7 @@ async def send_message(request: air.Request, event_code: str):
     form_data = await request.form()
     message_data = {
         "text": str(form_data.get("text")),
+        "sender_name": str(form_data.get("sender_name"))
     }
 
     image_keys = form_data.getlist("image_keys")
@@ -144,7 +145,7 @@ async def send_message(request: air.Request, event_code: str):
     data = EventMessageCreate(**message_data)
 
     db = SessionLocal()
-    message = EventMessage(event_id=event_code, text=data.text)
+    message = EventMessage(event_id=event_code, **data.model_dump())
     db.add(message)
     db.commit()
     db.refresh(message)
