@@ -1,27 +1,63 @@
 import asyncio
 import os
+import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 import air
 from air.responses import JSONResponse, RedirectResponse, Response
+from fastapi import Depends, Form
 from fastapi.responses import StreamingResponse
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, desc, or_, func
 from sqlalchemy.orm import selectinload
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.authentication import AuthenticationMiddleware
 
-from eventcloud.db import SessionLocal
+from eventcloud.auth.deps import current_user
+from eventcloud.auth.models import User
+from eventcloud.auth.routes import router as auth_router
+from eventcloud.auth.utils import set_session_user, verify_password
+from eventcloud.db import SessionLocal, get_db
 from eventcloud.event_broker import broker
+from eventcloud.middleware import AuthRequiredMiddleware
 from eventcloud.models import Event, EventMessage, EventMessageImage
 from eventcloud.r2 import generate_presigned_upload_url, get_signed_url_for_key
 from eventcloud.schemas import EventCreate, EventMessageCreate, EventMessageImageCreate
+from eventcloud.settings import settings
+from eventcloud.utils import jinja
+from eventcloud.auth.session_backend import SessionAuthBackend
 
 BASE_DIR = Path(__file__).resolve().parent
 
-
 app = air.Air()
 
-jinja = air.JinjaRenderer(directory=str(BASE_DIR / "templates"))
+app.include_router(auth_router)
+app.add_middleware(AuthRequiredMiddleware)
+
+
+
+SESSION_SECRET = settings.session_secret
+
+# Cookie/session tuning
+COOKIE_NAME = "sessionid"
+COOKIE_SECURE = False  # set True behind HTTPS
+COOKIE_SAMESITE = "strict"  # 'strict' or 'none' (with Secure) if you need cross-site
+COOKIE_MAX_AGE = 60 * 60 * 24 * 14  # 14 days
+
+app.add_middleware(
+    AuthenticationMiddleware,
+    backend=SessionAuthBackend()
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET,
+    session_cookie=COOKIE_NAME,
+    same_site=COOKIE_SAMESITE,
+    https_only=COOKIE_SECURE,
+    max_age=COOKIE_MAX_AGE,
+)
 
 
 @app.get("/")
@@ -56,7 +92,7 @@ def event_wall(request: air.Request, code: str):
 
 
 @app.post("/event/")
-async def create_event(request: air.Request):
+async def create_event(request: air.Request, user: User = Depends(current_user)):
     create_data: dict[str, str] = dict(await request.form())
     data = EventCreate(**create_data)
     created_at = datetime.now(timezone.utc)
@@ -75,7 +111,7 @@ async def create_event(request: air.Request):
 
 
 @app.get("/event/")
-def list_events(request: air.Request):
+def list_events(request: air.Request, user: User = Depends(current_user)):
     db = SessionLocal()
     events = db.query(Event).all()
 

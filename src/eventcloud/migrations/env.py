@@ -5,6 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from eventcloud.db import Base
 from eventcloud.models import *
+from eventcloud.auth.models import *
 from eventcloud.settings import settings
 
 # this is the Alembic Config object, which provides

@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = Field(default=..., validation_alias="CLOUDFLARE_R2_SECRET_ACCESS_KEY")
     r2_bucket_name: str = Field(default=..., validation_alias="CLOUDFLARE_R2_BUCKET_NAME")
     r2_s3_url: str = Field(default=..., validation_alias="CLOUDFLARE_S3_URL")
+    session_secret: str = Field(default=..., validation_alias="SESSION_SECRET")
 
     class Config:
         env_file = ".env"

@@ -31,5 +31,3 @@ class EventMessageImage(Base):
     image_key = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     event_message = relationship("EventMessage", back_populates="images")
-
-

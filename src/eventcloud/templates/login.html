@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+  <div class="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
+    <h1 class="text-2xl font-bold text-center mb-6">Sign In</h1>
+    {% if request.session.get("login_error") %}
+      <div class="mb-4 p-2 bg-red-100 text-red-600 text-sm rounded">
+        {{ request.session.get("login_error") }}
+      </div>
+    {% endif %}
+    <form method="post" action="/auth/login" class="space-y-4">
+      <input type="text" name="identifier" placeholder="Email or Username"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200">
+      <input type="password" name="password" placeholder="Password"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200">
+      <button type="submit"
+              class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+        Log In
+      </button>
+    </form>
+  </div>
+</body>
+</html>
+
