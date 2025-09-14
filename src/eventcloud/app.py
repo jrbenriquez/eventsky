@@ -30,12 +30,16 @@ from eventcloud.auth.session_backend import SessionAuthBackend
 from starlette.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
 
 app = air.Air()
 
 app.include_router(auth_router)
 app.add_middleware(AuthRequiredMiddleware)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 
