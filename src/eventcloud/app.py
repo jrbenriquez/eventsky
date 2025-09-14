@@ -65,12 +65,12 @@ def index(request: air.Request):
     return jinja(request, name="index.html")
 
 
-@app.get("/event/new/")
+@app.get("/events/new/")
 def event_form(request: air.Request):
     return jinja(request, "event_form.html")
 
 
-@app.get("/event/{code}/")
+@app.get("/events/{code}/")
 def event_wall(request: air.Request, code: str):
     db = SessionLocal()
     event = db.query(Event).filter_by(code=code).first()
@@ -91,7 +91,7 @@ def event_wall(request: air.Request, code: str):
     return jinja(request, "event_wall.html", {"event": event, "messages": messages})
 
 
-@app.post("/event/")
+@app.post("/events/")
 async def create_event(request: air.Request, user: User = Depends(current_user)):
     create_data: dict[str, str] = dict(await request.form())
     data = EventCreate(**create_data)
@@ -110,7 +110,7 @@ async def create_event(request: air.Request, user: User = Depends(current_user))
     return RedirectResponse(url=f"/event/{data.code}", status_code=302)
 
 
-@app.get("/event/")
+@app.get("/events/")
 def list_events(request: air.Request, user: User = Depends(current_user)):
     db = SessionLocal()
     events = db.query(Event).all()
