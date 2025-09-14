@@ -41,7 +41,10 @@
             <form hx-post="/message/{{ event.code }}/"
                   class="mx-auto w-full px-4 max-w-xl sm:max-w-2xl lg:max-w-3xl"
                   hx-swap="none"
-                  hx-on=" htmx:beforeRequest: if(!ensureGuestName(event)){return}; htmx:afterRequest: clearMessageForm(); handleAfterSubmit(); ">
+j                 hx-on="
+                    htmx:beforeRequest: if (!ensureGuestName(event)) { return }
+                    htmx:afterRequest: if (event.detail.xhr.status >= 200 && event.detail.xhr.status < 300) { clearMessageForm(); handleAfterSubmit(); startSendCooldown(15) }
+                  ">
                 <div class="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2 bg-white">
                     <!-- Upload Icon with badge -->
                     <div class="relative inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0">
@@ -373,6 +376,8 @@
         }
       });
       function clearMessageForm() {
+        const bar = document.getElementById('imagePreviewBar');
+        bar.classList.add('hidden');
         // clear text input
         const msgText = document.getElementById('msgText');
         if (msgText) msgText.value = '';
@@ -408,7 +413,6 @@
         //hide badges
         document.getElementById('fileBadge')?.classList.add('hidden');
         document.getElementById('cameraBadge')?.classList.add('hidden');
-
       }
     </script>
     <script>
@@ -429,5 +433,57 @@
           formatMsgTimes(fragment);
         });
       }
+    </script>
+    <script>
+      // COOLDOWN MECHANISM
+        document.addEventListener("DOMContentLoaded", () => {
+          const lastSent = parseInt(localStorage.getItem(COOLDOWN_KEY) || "0", 10);
+          const remaining = lastSent + 15000 - Date.now();
+          if (remaining > 0) {
+            startSendCooldown(Math.ceil(remaining / 1000));
+          }
+        });
+        const COOLDOWN_KEY = "lastMessageSentAt"; // localStorage key
+        let cooldownTimer = null;
+
+        function ensureNotCooling(evt) {
+          const lastSent = parseInt(localStorage.getItem(COOLDOWN_KEY) || "0", 10);
+          const remaining = lastSent + 15000 - Date.now();
+          if (remaining > 0) {
+            evt.preventDefault();
+            startSendCooldown(Math.ceil(remaining / 1000));
+            return false;
+          }
+          return true;
+        }
+
+        function startSendCooldown(seconds = 15) {
+          const endAt = Date.now() + seconds * 1000;
+          localStorage.setItem(COOLDOWN_KEY, Date.now().toString());
+
+          const btn = document.getElementById("sendBtn");
+          if (!btn) return;
+
+          // Store original content once
+          if (!btn.dataset.original) btn.dataset.original = btn.innerHTML;
+
+          btn.disabled = true;
+
+          function tick() {
+            const remaining = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+            if (remaining > 0) {
+              btn.textContent = `${remaining}`;
+            } else {
+              clearInterval(cooldownTimer);
+              cooldownTimer = null;
+              btn.disabled = false;
+              btn.innerHTML = btn.dataset.original;
+            }
+          }
+
+          tick();
+          if (cooldownTimer) clearInterval(cooldownTimer);
+          cooldownTimer = setInterval(tick, 1000);
+        }
     </script>
 </html>

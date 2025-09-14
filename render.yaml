@@ -19,6 +19,8 @@ services:
         value: "1"            # tweak per load
       - key: POETRY_VERSION
         value: "2.0.1"
+      - key: HOST
+        value: "https://eventsky.onrender.com"
 
     buildCommand: |
       pip install --upgrade pip

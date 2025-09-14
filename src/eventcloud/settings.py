@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     r2_s3_url: str = Field(default=..., validation_alias="CLOUDFLARE_S3_URL")
     session_secret: str = Field(default=..., validation_alias="SESSION_SECRET")
 
+    # 
+    host: str = Field(default=..., validation_alias="HOST")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
