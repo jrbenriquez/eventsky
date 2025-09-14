@@ -27,6 +27,7 @@ from eventcloud.schemas import EventCreate, EventMessageCreate, EventMessageImag
 from eventcloud.settings import settings
 from eventcloud.utils import jinja
 from eventcloud.auth.session_backend import SessionAuthBackend
+from starlette.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -34,6 +35,7 @@ app = air.Air()
 
 app.include_router(auth_router)
 app.add_middleware(AuthRequiredMiddleware)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 
@@ -88,7 +90,7 @@ def event_wall(request: air.Request, code: str):
     if not event:
         return Response("Event not found", 400)
 
-    return jinja(request, "event_wall.html", {"event": event, "messages": messages})
+    return jinja(request, "event_wall.html", {"event": event, "messages": messages, "event_url": f"{settings.host}/events/{event.code}"})
 
 
 @app.post("/events/")

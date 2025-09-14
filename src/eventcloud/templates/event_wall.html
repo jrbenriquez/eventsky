@@ -10,6 +10,7 @@
         <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+        <script src="/static/js/qrcode.min.js"></script>
         <style>html{-webkit-text-size-adjust:100%}</style>
     </head>
     <body class="bg-gray-50 h-[100svh] overflow-hidden flex flex-col">
@@ -19,6 +20,12 @@
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">{{ event.title }}</h1>
             <p class="text-gray-600 mt-2 text-base">{{ event.description }}</p>
             <small class="text-xs text-gray-400 block mt-1">Created at: {{ event.created_at }}</small>
+            <div class="flex justify-around m-1 cursor-pointer">
+              <svg onClick="toggleQrCodeModal()" title="View QR Code" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hover:shadow-lg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
+              </svg>
+            </div>
         </header>
         <!-- Messages -->
         <main id="messages"
@@ -41,10 +48,7 @@
             <form hx-post="/message/{{ event.code }}/"
                   class="mx-auto w-full px-4 max-w-xl sm:max-w-2xl lg:max-w-3xl"
                   hx-swap="none"
-j                 hx-on="
-                    htmx:beforeRequest: if (!ensureGuestName(event)) { return }
-                    htmx:afterRequest: if (event.detail.xhr.status >= 200 && event.detail.xhr.status < 300) { clearMessageForm(); handleAfterSubmit(); startSendCooldown(15) }
-                  ">
+                  hx-on=" htmx:beforeRequest: if (!ensureGuestName(event)) { return } htmx:afterRequest: if (event.detail.xhr.status >= 200 && event.detail.xhr.status < 300) { clearMessageForm(); handleAfterSubmit(); startSendCooldown(15) } ">
                 <div class="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2 bg-white">
                     <!-- Upload Icon with badge -->
                     <div class="relative inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0">
@@ -156,6 +160,34 @@ j                 hx-on="
                         class="w-full bg-black hover:bg-gray-600 text-white font-semibold py-2 rounded disabled:opacity-50">
                     Save
                 </button>
+            </div>
+        </div>
+
+        <!-- QR Code Modal -->
+        <div id="qrCodeModal" class="fixed inset-0 z-50 grid place-content-center bg-black/50 p-4 hidden"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="modalTitle">
+            <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+                <div id="eventLink" class="flex align-center text-center space-x-2 mt-4 cursor-pointer" onClick="copyLinktoClipboard()">
+                  <span type="text" disabled id="eventLinkText" class="text-sm text-grey-500">{{event_url}}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+                  </svg>
+                </div>
+                <hr class="border-gray-200 my-3" />
+                <div id="qrcode">
+                </div>
+                <div class="text-center mt-4">
+                  <a
+                    class="inline-block rounded-sm border border-black bg-black px-12 py-3 text-sm font-medium text-white hover:bg-transparent hover:text-black focus:ring-3 focus:outline-hidden"
+                    href="#"
+                    onClick="toggleQrCodeModal()"
+                  >
+                    Close
+                  </a>
+                  </div>
+
             </div>
         </div>
     </body>
@@ -376,43 +408,39 @@ j                 hx-on="
         }
       });
       function clearMessageForm() {
-        const bar = document.getElementById('imagePreviewBar');
-        bar.classList.add('hidden');
+      var bar = document.getElementById('imagePreviewBar');
+        if (bar) bar.classList.add('hidden');
+
         // clear text input
-        const msgText = document.getElementById('msgText');
+        var msgText = document.getElementById('msgText');
         if (msgText) msgText.value = '';
 
-        // clear file input
-        const fileInput = document.getElementById('fileInput');
+        // clear file inputs
+        var fileInput = document.getElementById('fileInput');
         if (fileInput) fileInput.value = '';
-
-        // clear camera input
-        const cameraInput = document.getElementById('cameraInput');
+        var cameraInput = document.getElementById('cameraInput');
         if (cameraInput) cameraInput.value = '';
 
-        // remove any dynamically added image_keys inputs
-        document.querySelectorAll('input[name="image_keys"]').forEach(n => n.remove());
-
-        // hide the file badge
-        const badge = document.getElementById('fileBadge');
-        if (badge) badge.classList.add('hidden');
-
-        // keep guest name as-is but ensure hidden field is synced
-        const name = (localStorage.getItem('guestName') || '').trim();
-        const guestNameField = document.getElementById('guestNameField');
-        if (guestNameField) guestNameField.value = name;
-
-        // update placeholder
-        if (msgText && name) {
-          msgText.placeholder = `Sending as ${name}`;
+        // remove any dynamically added image_keys inputs (with fallback for old Safari)
+        var keys = document.querySelectorAll('input[name="image_keys"]');
+        for (var i = 0; i < keys.length; i++) {
+          if (typeof keys[i].remove === 'function') keys[i].remove();
+          else if (keys[i].parentNode) keys[i].parentNode.removeChild(keys[i]);
         }
-        // clear previews
-        document.querySelectorAll('input[name="image_keys"]').forEach(n => n.remove());
-        document.getElementById('imagePreviewBar')?.replaceChildren(); // clear thumbs
 
-        //hide badges
-        document.getElementById('fileBadge')?.classList.add('hidden');
-        document.getElementById('cameraBadge')?.classList.add('hidden');
+        // hide badges
+        var fileBadge = document.getElementById('fileBadge');
+        var cameraBadge = document.getElementById('cameraBadge');
+        if (fileBadge) fileBadge.classList.add('hidden');
+        if (cameraBadge) cameraBadge.classList.add('hidden');
+
+
+        // clear previews (fallback if replaceChildren not supported)
+        var previewBar = document.getElementById('imagePreviewBar');
+        if (previewBar) {
+          if (typeof previewBar.replaceChildren === 'function') previewBar.replaceChildren();
+          else previewBar.innerHTML = '';
+        }
       }
     </script>
     <script>
@@ -485,5 +513,17 @@ j                 hx-on="
           if (cooldownTimer) clearInterval(cooldownTimer);
           cooldownTimer = setInterval(tick, 1000);
         }
+    </script>
+    <script type="text/javascript">
+      new QRCode(document.getElementById("qrcode"), "{{event_url}}");
+
+      function toggleQrCodeModal() {
+        document.getElementById("qrCodeModal").classList.toggle("hidden")
+      }
+
+      function copyLinktoClipboard() {
+        navigator.clipboard.writeText("{{event_url}}");
+        alert("Copied the text: " + "{{event_url}}");
+      }
     </script>
 </html>

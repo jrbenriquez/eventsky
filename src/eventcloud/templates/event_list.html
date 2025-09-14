@@ -7,7 +7,7 @@
   <h1>Events</h1>
     {% for event in events %}
       <li>
-        <a href="/event/{{ event.code }}">{{ event.title }}</a><br>
+        <a href="/events/{{ event.code }}">{{ event.title }}</a><br>
         <small>{{ event.description }}</small>
       </li>
     {% else %}
@@ -15,7 +15,7 @@
     {% endfor %}
 
     <hr/>
-    <a href="/event/new/"> Create Event </a>
+    <a href="/events/new/"> Create Event </a>
 
 </body>
 </html>
