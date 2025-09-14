@@ -57,7 +57,7 @@ def login(
 
     if not user or not verify_password(password, user.password_hash):
         # Store error in session (flash-like)
-        request.session["login_error"] = "Invalid email/username or password"
+        request.session["login_error"] = "Last attempt was invalid email/username or password"
         return RedirectResponse(url="/auth/login", status_code=303)
 
     if not user.is_active:
@@ -76,3 +76,12 @@ def login(
 @router.get("/login")
 def login_page(request: air.Request):
     return jinja(request, "login.html")
+
+@router.get("/logout")
+def logout_page(request: Request):
+    return jinja(request, "logout.html")
+
+@router.post("/logout")
+def perform_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/", status_code=303)

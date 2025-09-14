@@ -1,0 +1,11 @@
+<div class="relative w-14 h-14 flex-shrink-0 group" data-key="{{ key }}">
+  <img src="{{ url }}" class="w-full h-full object-cover rounded-md border" data-lightbox-src="{{ url }}" alt="selected image"/>
+  <!-- <span class="absolute -bottom-1 left-1 text-[10px] px-1 py-0.5 rounded bg-black/60 text-white"> -->
+  <!--   {{ 'Cam' if source == 'camera' else 'File' }} -->
+  <!-- </span> -->
+  <button type="button"
+          onclick="removeImageKey('{{ key }}')"
+          class="absolute -top-1 -right-1 bg-black/70 hover:bg-black text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+    x
+  </button>
+</div>

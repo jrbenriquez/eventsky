@@ -234,6 +234,13 @@ def render_image(request: air.Request, key: str):
 
     return jinja(request, "_message_image.html", {"url": url})
 
+@app.get("/messageimagepreview/")
+def render_image_preview(request: air.Request, key: str):
+    print(key)
+    url = get_signed_url_for_key(key)
+
+    return jinja(request, "_message_image_preview.html", {"url": url})
+
 
 @app.get("/event/{code}/stream")
 async def event_stream(request: air.Request, code: str):

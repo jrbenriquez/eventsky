@@ -46,30 +46,62 @@
                     <!-- Upload Icon with badge -->
                     <div class="relative inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0">
                         <button type="button"
-                                onclick="uploadFile()"
+                                onclick="uploadFile('cameraInput')"
+                                title="Use camera"
+                                class="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 p-0 leading-none text-gray-500 hover:text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 fill="none"
+                                 viewBox="0 0 24 24"
+                                 stroke-width="1.5"
+                                 stroke="currentColor"
+                                 class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                            </svg>
+                        </button>
+                        <!-- Badge (kept absolute) -->
+                        <span id="cameraBadge"
+                              class="pointer-events-none absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center hidden">
+                        </span>
+                    </div>
+                    <!-- Upload Icon with badge -->
+                    <div class="relative inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 shrink-0">
+                        <button type="button"
+                                onclick="uploadFile('fileInput')"
                                 title="Upload photo"
                                 class="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 p-0 leading-none text-gray-500 hover:text-gray-700">
                             <svg xmlns="http://www.w3.org/2000/svg"
-                                 class="block w-5 h-5 sm:w-6 sm:h-6"
-                                 viewBox="0 0 24 24"
                                  fill="none"
-                                 stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h2l1-2h8l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                 viewBox="0 0 24 24"
+                                 stroke-width="1.5"
+                                 stroke="currentColor"
+                                 class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                             </svg>
                         </button>
                         <!-- Badge (kept absolute) -->
                         <span id="fileBadge"
-                              class="pointer-events-none absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center hidden"></span>
+                              class="pointer-events-none absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center hidden">
+                        </span>
                     </div>
                     <!-- File Input for Image -->
                     <input type="file"
-                           id="fileInput"
-                           accept="image/*;capture=camera"
+                           id="cameraInput"
+                           accept="image/*"
+                           capture="environment"
                            class="hidden"
+                           onchange="handleFileUpload(event, 'cameraBadge', 'camera')" />
+                    <input type="file"
+                           id="fileInput"
+                           accept="image/*"
                            multiple
-                           onchange="handleFileUpload(event)" />
+                           class="hidden"
+                           onchange="handleFileUpload(event, 'fileBadge', 'upload')" />
                     <input type="hidden" id="guestNameField" name="sender_name" value="">
+                    <div id="imagePreviewBar"
+                         class="flex gap-2 px-3 py-2 overflow-x-auto max-w-full">
+                        <!-- Previews will be injected here -->
+                    </div>
                     <!-- Text Input -->
                     <input id="msgText"
                            type="text"
@@ -122,30 +154,35 @@
         </div>
     </body>
     <script>
-      function uploadFile() {
-        document.getElementById("fileInput").click();
+      function uploadFile(inputId) {
+        document.getElementById(inputId).click();
       }
 
-      function addUploadedKeyToForm(key) {
-        const form = document.querySelector("form");
-
-        const hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = "image_keys"; // name should match your backend field
-        hiddenInput.value = key;
-
-        form.appendChild(hiddenInput);
-      }
-      function addImageKey(key) {
+      function addImageKey(key, source) {
           const form = document.querySelector('form');
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = 'image_keys';
+          input.classList.add(source === 'camera' ? 'camera' : 'upload');
           input.value = key;
           form.appendChild(input);
       }
+      function removeImageKey(key) {
+        document.querySelectorAll(`input[name="image_keys"][value="${CSS.escape(key)}"]`).forEach(n => n.remove());
+        document.querySelector(`#imagePreviewBar [data-key="${CSS.escape(key)}"]`)?.remove();
+        updateBadges("cameraBadge", "camera");
+        updateBadges("fileBage", "upload");
+      }
 
-      async function processFile(file) {
+      function addToPreviewBar(key) {
+        // Tell the server which key and source (camera|upload) to render
+          htmx.ajax('GET', `/messageimagepreview/?key=${encodeURIComponent(key)}`, {
+            target: '#imagePreviewBar',
+            swap: 'beforeend'      // append the new thumb
+          });
+      }
+
+      async function processFile(file, source) {
         const extension = file.name.split('.').pop().toLowerCase();
 
         try {
@@ -175,7 +212,8 @@
             body: file,
           });
 
-          addImageKey(key);
+          addImageKey(key, source);
+          addToPreviewBar(key);
 
         } catch (err) {
           console.error("Upload failed:", err);
@@ -183,20 +221,30 @@
 
       }
 
-      async function handleFileUpload(event) {
-        const files = event.target.files;
-        const badge = document.getElementById('fileBadge');
-    
-        if (files.length > 0) {
-            badge.textContent = files.length;
+      function updateBadges(elementId, source) {
+        // After uploading, update the badge based on how many image_keys belong to this source
+        const badge = document.getElementById(elementId);
+        const count = document.querySelectorAll(`input[name="image_keys"].${source}`).length;
+        if (badge) {
+          if (count > 0) {
+            badge.textContent = count;
             badge.classList.remove('hidden');
-        } else {
+          } else {
             badge.classList.add('hidden');
+          }
         }
+
+      }
+
+      async function handleFileUpload(event, elementId, source) {
+        const files = event.target.files;
 
         if (!files) return;
 
-        await Promise.all(Array.from(files).map(processFile));
+        await Promise.all(Array.from(files).map(f => processFile(f, source)));
+        updateBadges(elementId, source);
+        // Clear input so change fires next time with same file(s)
+        event.target.value = '';
 
       }
 
@@ -205,6 +253,7 @@
         document.getElementById('empty-state')?.remove();
       {% endif %}
       document.getElementById('fileBadge')?.classList.add('hidden');; 
+      document.getElementById('cameraBadge')?.classList.add('hidden');; 
       const el = document.getElementById("messages");
       if (el) el.scrollTop = 0; // top for timeline
     }
@@ -307,6 +356,10 @@
         const fileInput = document.getElementById('fileInput');
         if (fileInput) fileInput.value = '';
 
+        // clear camera input
+        const cameraInput = document.getElementById('cameraInput');
+        if (cameraInput) cameraInput.value = '';
+
         // remove any dynamically added image_keys inputs
         document.querySelectorAll('input[name="image_keys"]').forEach(n => n.remove());
 
@@ -323,6 +376,14 @@
         if (msgText && name) {
           msgText.placeholder = `Sending message as ${name}`;
         }
+        // clear previews
+        document.querySelectorAll('input[name="image_keys"]').forEach(n => n.remove());
+        document.getElementById('imagePreviewBar')?.replaceChildren(); // clear thumbs
+
+        //hide badges
+        document.getElementById('fileBadge')?.classList.add('hidden');
+        document.getElementById('cameraBadge')?.classList.add('hidden');
+
       }
     </script>
     <script>

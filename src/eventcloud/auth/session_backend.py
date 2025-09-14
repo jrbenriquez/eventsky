@@ -43,7 +43,7 @@ class SessionAuthBackend(AuthenticationBackend):
         with SessionLocal() as db:
             user = db.get(User, user_id)
 
-        if not user:
+        if not user or not user.is_active:
             return  # treat as unauthenticated
 
         return AuthCredentials(["authenticated"]), AuthUser(user)
