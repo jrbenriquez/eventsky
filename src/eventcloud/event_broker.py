@@ -6,10 +6,9 @@ class EventBroker:
         self.channels = {}  # {event_code: set of queues}
 
     async def connect(self, event_code):
-        q = asyncio.Queue()
+        q = asyncio.Queue(maxsize=100)
         self.channels.setdefault(event_code, set()).add(q)
         return q
-
 
     async def disconnect(self, event_code, q):
         qs = self.channels.get(event_code)
@@ -24,7 +23,16 @@ class EventBroker:
         frame = "event: message\n" + "".join(f"data: {ln}\n" for ln in lines) + "\n"
 
         for q in list(self.channels.get(event_code, [])):
-            await q.put(frame)
+            try:
+                q.put_nowait(frame)
+            except asyncio.QueueFull:
+                try:
+                    # Drop oldest item to make room
+                    _ = q.get_nowait()
+                    q.put_nowait(frame)
+                except asyncio.QueueFull:
+                    # If it's still full (race condition), just skip
+                    pass
 
 
 broker = EventBroker()
