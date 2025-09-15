@@ -1,33 +1,40 @@
 import asyncio
-import os
-import secrets
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from uuid import uuid4
 
 import air
-from air.responses import JSONResponse, RedirectResponse, Response
-from fastapi import Depends, Form
+from air.responses import JSONResponse
+from air.responses import RedirectResponse
+from air.responses import Response
+from fastapi import Depends
 from fastapi.responses import StreamingResponse
-from sqlalchemy import and_, desc, or_, func
+from sqlalchemy import and_
+from sqlalchemy import desc
+from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
-from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.staticfiles import StaticFiles
 
 from eventcloud.auth.deps import current_user
 from eventcloud.auth.models import User
 from eventcloud.auth.routes import router as auth_router
-from eventcloud.auth.utils import set_session_user, verify_password
-from eventcloud.db import SessionLocal, get_db
+from eventcloud.auth.session_backend import SessionAuthBackend
+from eventcloud.db import SessionLocal
 from eventcloud.event_broker import broker
 from eventcloud.middleware import AuthRequiredMiddleware
-from eventcloud.models import Event, EventMessage, EventMessageImage
-from eventcloud.r2 import generate_presigned_upload_url, get_signed_url_for_key
-from eventcloud.schemas import EventCreate, EventMessageCreate, EventMessageImageCreate
+from eventcloud.models import Event
+from eventcloud.models import EventMessage
+from eventcloud.models import EventMessageImage
+from eventcloud.r2 import generate_presigned_upload_url
+from eventcloud.r2 import get_signed_url_for_key
+from eventcloud.schemas import EventCreate
+from eventcloud.schemas import EventMessageCreate
+from eventcloud.schemas import EventMessageImageCreate
 from eventcloud.settings import settings
 from eventcloud.utils import jinja
-from eventcloud.auth.session_backend import SessionAuthBackend
-from starlette.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -42,7 +49,6 @@ if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
-
 SESSION_SECRET = settings.session_secret
 
 # Cookie/session tuning
@@ -51,10 +57,7 @@ COOKIE_SECURE = False  # set True behind HTTPS
 COOKIE_SAMESITE = "strict"  # 'strict' or 'none' (with Secure) if you need cross-site
 COOKIE_MAX_AGE = 60 * 60 * 24 * 14  # 14 days
 
-app.add_middleware(
-    AuthenticationMiddleware,
-    backend=SessionAuthBackend()
-)
+app.add_middleware(AuthenticationMiddleware, backend=SessionAuthBackend())
 
 app.add_middleware(
     SessionMiddleware,
@@ -94,7 +97,15 @@ def event_wall(request: air.Request, code: str):
     if not event:
         return Response("Event not found", 400)
 
-    return jinja(request, "event_wall.html", {"event": event, "messages": messages, "event_url": f"{settings.host}/events/{event.code}"})
+    return jinja(
+        request,
+        "event_wall.html",
+        {
+            "event": event,
+            "messages": messages,
+            "event_url": f"{settings.host}/events/{event.code}",
+        },
+    )
 
 
 @app.post("/events/")
@@ -125,23 +136,15 @@ def list_events(request: air.Request, user: User = Depends(current_user)):
 
 
 @app.get("/event/{code}/messages")
-def get_messages(
-    request: air.Request, code: str, before_id: str | None = None, limit: int = 10
-):
+def get_messages(request: air.Request, code: str, before_id: str | None = None, limit: int = 10):
     db = SessionLocal()
 
-    q = (
-        db.query(EventMessage)
-        .filter_by(event_id=code)
-        .options(selectinload(EventMessage.images))
-    )
+    q = db.query(EventMessage).filter_by(event_id=code).options(selectinload(EventMessage.images))
 
     if before_id:
         # Use (created_at, uuid) as a stable cursor
         pivot = (
-            db.query(EventMessage.created_at, EventMessage.uuid)
-            .filter_by(uuid=before_id)
-            .first()
+            db.query(EventMessage.created_at, EventMessage.uuid).filter_by(uuid=before_id).first()
         )
         if pivot:
             ca, uid = pivot
@@ -153,11 +156,7 @@ def get_messages(
             )
 
     # Grab the next page newest->oldest, then flip to oldest->newest for display
-    rows = (
-        q.order_by(EventMessage.created_at.desc(), EventMessage.uuid.desc())
-        .limit(limit)
-        .all()
-    )
+    rows = q.order_by(EventMessage.created_at.desc(), EventMessage.uuid.desc()).limit(limit).all()
     # Oldest in this chunk becomes the next 'before_id'
     next_before_id = rows[0].uuid if rows else None
 
@@ -195,18 +194,12 @@ async def send_message(request: air.Request, event_code: str):
     if image_keys and isinstance(image_keys, list):
         for key in image_keys:
             data = EventMessageImageCreate(image_key=key)
-            image = EventMessageImage(
-                image_key=data.image_key, event_message_id=message.uuid
-            )
+            image = EventMessageImage(image_key=data.image_key, event_message_id=message.uuid)
             db.add(image)
 
     db.commit()
     db.refresh(message)
-    message = (
-        db.query(EventMessage)
-        .options(selectinload(EventMessage.images))
-        .get(message.uuid)
-    )
+    message = db.query(EventMessage).options(selectinload(EventMessage.images)).get(message.uuid)
 
     html = jinja(request, "_messages.html", {"messages": [message]}).body.decode()
     payload = '<span data-autoscroll="1" style="display:none"></span>' + html
@@ -239,6 +232,7 @@ def render_image(request: air.Request, key: str):
     url = get_signed_url_for_key(key)
 
     return jinja(request, "_message_image.html", {"url": url})
+
 
 @app.get("/messageimagepreview/")
 def render_image_preview(request: air.Request, key: str):
@@ -275,17 +269,11 @@ async def event_stream(request: air.Request, code: str):
 
 
 @app.get("/event/{code}/check_older/")
-def check_older_message(
-    request: air.Request, code: str, before_id: str, limit: int = 10
-):
+def check_older_message(request: air.Request, code: str, before_id: str, limit: int = 10):
     """Checks for older messages and if yes returns the older button indicator"""
     db = SessionLocal()
 
-    pivot = (
-        db.query(EventMessage.created_at, EventMessage.uuid)
-        .filter_by(uuid=before_id)
-        .first()
-    )
+    pivot = db.query(EventMessage.created_at, EventMessage.uuid).filter_by(uuid=before_id).first()
     if not pivot:
         db.close()
         return Response("", 204)  # nothing to add

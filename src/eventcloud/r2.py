@@ -33,6 +33,8 @@ def generate_presigned_upload_url(
         ExpiresIn=expires_in,
         HttpMethod=http_method,
     )
+
+
 def get_signed_url_for_key(image_key: str, expires_in: int = 3600):
     try:
         url = r2_client.generate_presigned_url(

@@ -55,7 +55,7 @@
             <form hx-post="/message/{{ event.code }}/"
                   class="mx-auto w-full px-4 max-w-xl sm:max-w-2xl lg:max-w-3xl"
                   hx-swap="none"
-                  hx-on="htmx:beforeRequest: if (!ensureGuestName(event)) { return; }; 
+                  hx-on="htmx:beforeRequest: if (!ensureGuestName(event)) { return; };
                          htmx:afterRequest: if (event.detail.successful) {
                         clearMessageForm();
                         handleAfterSubmit();

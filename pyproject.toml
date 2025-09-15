@@ -39,3 +39,15 @@ watchdog = "^4.0.0"  # Optional: for auto-reload script
 alembic = "^1.16.4"
 pre-commit = "^4.3.0"
 levenshtein = "^0.27.1"
+
+[tool.ruff]
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # Enable import sorting ("I") alongside errors & flakes
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+force-sort-within-sections = true
+order-by-type = false

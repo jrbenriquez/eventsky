@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-import sys
 import getpass
+import sys
 from typing import Optional
 
 from passlib.context import CryptContext
-from pydantic import BaseModel, EmailStr, ValidationError
+from pydantic import BaseModel
+from pydantic import EmailStr
+from pydantic import ValidationError
+
+from eventcloud.auth.models import User  # Base if you want optional auto-create
 
 # --- Import your app's DB and User model ---
 # Adjust these imports to match your project structure.
 from eventcloud.db import SessionLocal
-from eventcloud.auth.models import User                # Base if you want optional auto-create
-
 
 pwd_ctx = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -86,7 +88,10 @@ def main():
         db.add(user)
         db.commit()
         db.refresh(user)
-        print(f"Success: created user id={user.id}, email={user.email}, username={user.username or '(none)'}")
+        print(
+            f"Success: created user id={user.id}, email={user.email},"
+            "username={user.username or '(none)'}"
+        )
     except KeyboardInterrupt:
         print("\nCancelled.")
         sys.exit(130)
@@ -100,4 +105,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

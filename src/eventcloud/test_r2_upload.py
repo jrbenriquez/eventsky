@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import boto3
 from botocore.client import Config
-from pathlib import Path
 
 from eventcloud.settings import settings
 
@@ -31,9 +32,8 @@ print("✅ Upload complete!")
 response = r2_client.get_object(Bucket=settings.r2_bucket_name, Key=R2_TEST_KEY)
 
 # Read content
-body = response['Body'].read().decode('utf-8')
+body = response["Body"].read().decode("utf-8")
 print("File contents:", body)
 
 response = r2_client.delete_object(Bucket=settings.r2_bucket_name, Key=R2_TEST_KEY)
 print("Delete response:", response)
-

@@ -6,17 +6,25 @@ Safe DB initializer:
 - Optional override: set ALLOW_CREATE_MISSING=true to create only missing tables.
 """
 
-from sqlalchemy import inspect
-from sqlalchemy.exc import SQLAlchemyError
 import os
 import sys
 
-# Import your SQLAlchemy engine/Base and models so metadata is populated
-from eventcloud.db import engine, Base
+from sqlalchemy import inspect
+from sqlalchemy.exc import SQLAlchemyError
+
 # Import models to ensure they’re registered on Base.metadata
 from eventcloud import models  # noqa: F401  (ensure side-effects)
+from eventcloud.db import Base
 
-ALLOW_CREATE_MISSING = os.getenv("ALLOW_CREATE_MISSING", "").lower() in {"1", "true", "yes"}
+# Import your SQLAlchemy engine/Base and models so metadata is populated
+from eventcloud.db import engine
+
+ALLOW_CREATE_MISSING = os.getenv("ALLOW_CREATE_MISSING", "").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
 
 def main() -> int:
     inspector = inspect(engine)
@@ -71,6 +79,7 @@ def main() -> int:
         print("[init_db] 🚧 Creating only missing tables (ALLOW_CREATE_MISSING=true)…")
         # Build a minimal MetaData with only missing tables and create them
         from sqlalchemy import MetaData
+
         md = MetaData()
         for name in missing:
             Base.metadata.tables[name].tometadata(md)
@@ -84,4 +93,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

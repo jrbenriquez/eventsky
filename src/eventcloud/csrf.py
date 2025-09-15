@@ -1,12 +1,17 @@
 import secrets
-from fastapi import Request, HTTPException, status
+
+from fastapi import HTTPException
+from fastapi import Request
+from fastapi import status
 
 CSRF_KEY = "csrf"
+
 
 def ensure_csrf(request: Request):
     token = request.session.get(CSRF_KEY)
     if not token:
         request.session[CSRF_KEY] = secrets.token_urlsafe(24)
+
 
 def require_csrf(request: Request):
     sent = request.headers.get("X-CSRF-Token") or request.form().get(CSRF_KEY)

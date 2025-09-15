@@ -1,6 +1,14 @@
-from datetime import datetime, timezone
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, func
+from datetime import datetime
+from datetime import timezone
+
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
+
 from eventcloud.db import Base
+
 
 class User(Base):
     __tablename__ = "users"

@@ -30,12 +30,12 @@ repos:
       - id: forbid-tabs
         files: '\.py$|\.js$|\.less$|\.html$'
         exclude: '.*/schema/docs/.*$'
-  - repo: https://github.com/astral-sh/ruff-pre-commit
 
-    rev: v0.8.3
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.0
     hooks:
-      - id: ruff
+      - id: ruff-check
+        types_or: [ python, pyi ]
         args: [--fix, --exit-non-zero-on-fix, --show-fixes]
       - id: ruff-format
-
         types: [file, python]

@@ -1,13 +1,15 @@
 # eventcloud/auth/session_backend.py
-from starlette.authentication import (
-    AuthenticationBackend, AuthCredentials, BaseUser, UnauthenticatedUser
-)
-from starlette.requests import HTTPConnection
 from sqlalchemy.orm import sessionmaker
-from eventcloud.db import engine
+from starlette.authentication import AuthCredentials
+from starlette.authentication import AuthenticationBackend
+from starlette.authentication import BaseUser
+from starlette.requests import HTTPConnection
+
 from eventcloud.auth.models import User
+from eventcloud.db import engine
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+
 
 class AuthUser(BaseUser):
     def __init__(self, user: User):
@@ -29,6 +31,7 @@ class AuthUser(BaseUser):
     @property
     def email(self) -> User:
         return self._user.email
+
 
 class SessionAuthBackend(AuthenticationBackend):
     async def authenticate(self, conn: HTTPConnection):

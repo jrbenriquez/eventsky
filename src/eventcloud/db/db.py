@@ -1,5 +1,7 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
+
 from eventcloud.settings import settings
 
 connect_args = {}
@@ -13,6 +15,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 
 Base = declarative_base()
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -20,8 +23,8 @@ def get_db():
     finally:
         db.close()  # <-- Always closes the session
 
+
 # How to use db helper
 # @app.get("/users/")
 # def read_users(db: Session = Depends(get_db)):
 #     return db.query(User).all()
-

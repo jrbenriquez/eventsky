@@ -1,7 +1,7 @@
-from typing import Annotated
 from pydantic import Field
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     # === General ===
@@ -20,12 +20,14 @@ class Settings(BaseSettings):
 
     # === R2 / S3 ===
     r2_access_key_id: str = Field(default=..., validation_alias="CLOUDFLARE_R2_ACCESS_KEY_ID")
-    r2_secret_access_key: str = Field(default=..., validation_alias="CLOUDFLARE_R2_SECRET_ACCESS_KEY")
+    r2_secret_access_key: str = Field(
+        default=..., validation_alias="CLOUDFLARE_R2_SECRET_ACCESS_KEY"
+    )
     r2_bucket_name: str = Field(default=..., validation_alias="CLOUDFLARE_R2_BUCKET_NAME")
     r2_s3_url: str = Field(default=..., validation_alias="CLOUDFLARE_S3_URL")
     session_secret: str = Field(default=..., validation_alias="SESSION_SECRET")
 
-    # 
+    #
     host: str = Field(default=..., validation_alias="HOST")
 
     class Config:

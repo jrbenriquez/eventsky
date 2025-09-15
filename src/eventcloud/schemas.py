@@ -1,12 +1,15 @@
 # schemas.py
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+
+from pydantic import BaseModel
+from pydantic import ConfigDict
+
 
 class EventCreate(BaseModel):
     title: str
     description: str
     code: str
+
 
 class EventRead(BaseModel):
     code: str
@@ -15,6 +18,7 @@ class EventRead(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class EventMessageImageRead(BaseModel):
     uuid: str
@@ -25,9 +29,11 @@ class EventMessageImageRead(BaseModel):
     class Config:
         from_attributes = True
 
+
 class EventMessageCreate(BaseModel):
     text: str
     sender_name: str
+
 
 class EventMessageImageCreate(BaseModel):
     image_key: str
