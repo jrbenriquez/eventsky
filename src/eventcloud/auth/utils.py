@@ -1,7 +1,25 @@
+from functools import wraps
+
+import air
 from fastapi import Request
 from passlib.context import CryptContext
+from starlette.responses import RedirectResponse
 
 pwd_ctx = CryptContext(schemes=["argon2"], deprecated="auto")
+
+SESSION_USER_KEY = "uid"
+
+
+def login_required(fn):
+    @wraps(fn)
+    def wrapper(request: air.Request, *args, **kwargs):
+        print("TESSSSSST")
+        print(request.session)
+        if not request.session.get(SESSION_USER_KEY):
+            return RedirectResponse("/auth/login", status_code=303)
+        return fn(request, *args, **kwargs)
+
+    return wrapper
 
 
 def hash_password(raw: str) -> str:
@@ -10,9 +28,6 @@ def hash_password(raw: str) -> str:
 
 def verify_password(raw: str, hashed: str) -> bool:
     return pwd_ctx.verify(raw, hashed)
-
-
-SESSION_USER_KEY = "uid"
 
 
 def set_session_user(request: Request, user_id: int) -> None:

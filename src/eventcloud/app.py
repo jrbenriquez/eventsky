@@ -24,7 +24,6 @@ from eventcloud.auth.routes import router as auth_router
 from eventcloud.auth.session_backend import SessionAuthBackend
 from eventcloud.db import SessionLocal
 from eventcloud.event_broker import broker
-from eventcloud.middleware import AuthRequiredMiddleware
 from eventcloud.models import Event
 from eventcloud.models import EventMessage
 from eventcloud.models import EventMessageImage
@@ -43,7 +42,6 @@ STATIC_DIR = BASE_DIR / "static"
 app = air.Air()
 
 app.include_router(auth_router)
-app.add_middleware(AuthRequiredMiddleware)
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

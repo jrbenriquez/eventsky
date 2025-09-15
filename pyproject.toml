@@ -38,6 +38,7 @@ uvicorn = "^0.29.0"
 watchdog = "^4.0.0"  # Optional: for auto-reload script
 alembic = "^1.16.4"
 pre-commit = "^4.3.0"
+ipdb = "^0.13.13"
 
 [tool.ruff]
 line-length = 99
