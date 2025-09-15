@@ -75,10 +75,14 @@ def login(
 
 @router.get("/login")
 def login_page(request: air.Request):
+    if request.session.get("uid"):
+        return RedirectResponse(url="/", status_code=303)
     return jinja(request, "login.html")
 
 @router.get("/logout")
 def logout_page(request: Request):
+    if not request.session.get("uid"):
+        return RedirectResponse(url="/", status_code=303)
     return jinja(request, "logout.html")
 
 @router.post("/logout")

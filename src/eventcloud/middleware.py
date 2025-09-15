@@ -2,8 +2,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import RedirectResponse
 
 protected_routes = [
-    "/event/",
-    "/event/new/",
+    "/events/",
+    "/events/new/",
 ]
 class AuthRequiredMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
