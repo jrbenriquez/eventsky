@@ -122,7 +122,7 @@ async def create_event(request: air.Request, user: User = Depends(current_user))
     db.add(event)
     db.commit()
     db.close()
-    return RedirectResponse(url=f"/event/{data.code}", status_code=302)
+    return RedirectResponse(url=f"/events/{data.code}", status_code=302)
 
 
 @app.get("/events/")
@@ -133,7 +133,7 @@ def list_events(request: air.Request, user: User = Depends(current_user)):
     return jinja(request, "event_list.html", {"events": events})
 
 
-@app.get("/event/{code}/messages")
+@app.get("/events/{code}/messages")
 def get_messages(request: air.Request, code: str, before_id: str | None = None, limit: int = 10):
     db = SessionLocal()
 
@@ -239,7 +239,7 @@ def render_image_preview(request: air.Request, key: str):
     return jinja(request, "_message_image_preview.html", {"url": url})
 
 
-@app.get("/event/{code}/stream")
+@app.get("/events/{code}/stream")
 async def event_stream(request: air.Request, code: str):
     queue = await broker.connect(code)
 
@@ -266,7 +266,7 @@ async def event_stream(request: air.Request, code: str):
     )
 
 
-@app.get("/event/{code}/check_older/")
+@app.get("/events/{code}/check_older/")
 def check_older_message(request: air.Request, code: str, before_id: str, limit: int = 10):
     """Checks for older messages and if yes returns the older button indicator"""
     db = SessionLocal()

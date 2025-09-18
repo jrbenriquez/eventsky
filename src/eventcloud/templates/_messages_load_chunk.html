@@ -1,7 +1,7 @@
 {% if messages %}
   {% include "_messages.html" %}
   <div id="infinite-scroll"
-       hx-get="/event/{{ event_code }}/check_older?before_id={{ messages[-1].uuid }}&limit=10"
+       hx-get="/events/{{ event_code }}/check_older?before_id={{ messages[-1].uuid }}&limit=10"
        hx-trigger="load"
        hx-swap="outerHTML">
   </div>
