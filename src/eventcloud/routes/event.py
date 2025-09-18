@@ -83,7 +83,7 @@ async def create_event(request: air.Request, user: User = Depends(current_user))
     db.add(event)
     db.commit()
     db.close()
-    return RedirectResponse(url=f"/event/{data.code}", status_code=302)
+    return RedirectResponse(url=f"/events/{data.code}", status_code=302)
 
 
 @app.get("/events/")
