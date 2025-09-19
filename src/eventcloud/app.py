@@ -89,7 +89,12 @@ def event_form(request: air.Request):
 
 
 @app.get("/manage/events/{uuid}")
-def manage_event_form(request: air.Request, uuid: str, db: Session = Depends(get_db)):
+def manage_event_form(
+    request: air.Request,
+    uuid: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
     csrf_token = get_csrf_token(request)
     event = db.query(Event).filter_by(uuid=uuid).first()
 
@@ -108,7 +113,10 @@ def manage_event_form(request: air.Request, uuid: str, db: Session = Depends(get
             "csrf_token": csrf_token,
             "messages": [
                 most_recent_message,
-            ],
+            ]
+            if most_recent_message
+            else [],
+            "user": user,
         },
     )
 

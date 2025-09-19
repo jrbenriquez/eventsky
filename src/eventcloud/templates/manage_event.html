@@ -175,7 +175,8 @@
       id="messages"
       class="w-full flex-1 overflow-y-auto mx-auto pt-8 px-4 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
-      {% include "_messages.html" %} {% if messages %}
+      {% include "_messages.html" %}
+      {% if messages %}
       <div
         id="infinite-scroll"
         hx-get="/events/{{ event.code }}/check_older/?before_id={{ messages[-1].uuid }}&limit=10"
