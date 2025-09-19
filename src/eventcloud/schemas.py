@@ -5,10 +5,16 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 
 
-class EventCreate(BaseModel):
+class EventBase(BaseModel):
     title: str
     description: str
     code: str
+
+
+class EventCreate(EventBase): ...
+
+
+class EventUpdate(EventBase): ...
 
 
 class EventRead(BaseModel):

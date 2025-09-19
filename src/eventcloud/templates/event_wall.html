@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport"
-              content="width=device-width, initial-scale=1, viewport-fit=cover">
-        <title>{{ event.title }}</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-        <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
-        <script src="/static/js/qrcode.min.js"></script>
-        <style>html{-webkit-text-size-adjust:100%}</style>
-    </head>
+{% extends "base.html" %}
+{% block head %}
+    <title>{{ event.title }}</title>
+{% endblock %}
+{% block body %}
     <body class="bg-gray-50 h-[100svh] overflow-hidden flex flex-col">
         <!-- Event Header -->
         <header id="eventTitle"
@@ -225,6 +215,8 @@
             </div>
         </div>
     </body>
+{% endblock %}
+{% block scripts %}
     <script>
       function uploadFile(inputId) {
         document.getElementById(inputId).click();
@@ -579,4 +571,4 @@
           a.remove();
         }
     </script>
-</html>
+{% endblock %}

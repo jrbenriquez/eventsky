@@ -10,15 +10,20 @@ from sqlalchemy import Text
 from sqlalchemy.orm import relationship
 
 from eventcloud.db import Base
+from eventcloud.settings import settings
 
 
 class Event(Base):
     __tablename__ = "events"
 
-    code = Column(String, primary_key=True, index=True)
+    uuid = Column(String, primary_key=True, default=lambda: str(uuid4()), index=True)
+    code = Column(String, index=True, unique=True, nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def get_event_url(self):
+        return f"{settings.host}/events/{self.code}"
 
 
 class EventMessage(Base):

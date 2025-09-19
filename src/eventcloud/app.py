@@ -1,7 +1,9 @@
 import asyncio
+from collections.abc import Mapping
 from datetime import datetime
 from datetime import timezone
 from pathlib import Path
+from typing import Optional
 from uuid import uuid4
 
 import air
@@ -9,11 +11,14 @@ from air.responses import JSONResponse
 from air.responses import RedirectResponse
 from air.responses import Response
 from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import and_
 from sqlalchemy import desc
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
@@ -22,6 +27,8 @@ from eventcloud.auth.deps import current_user
 from eventcloud.auth.models import User
 from eventcloud.auth.routes import router as auth_router
 from eventcloud.auth.session_backend import SessionAuthBackend
+from eventcloud.auth.utils import get_session_user_id
+from eventcloud.db import get_db
 from eventcloud.db import SessionLocal
 from eventcloud.event_broker import broker
 from eventcloud.models import Event
@@ -32,7 +39,9 @@ from eventcloud.r2 import get_signed_url_for_key
 from eventcloud.schemas import EventCreate
 from eventcloud.schemas import EventMessageCreate
 from eventcloud.schemas import EventMessageImageCreate
+from eventcloud.schemas import EventUpdate
 from eventcloud.settings import settings
+from eventcloud.utils import get_csrf_token
 from eventcloud.utils import jinja
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -41,6 +50,7 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = air.Air()
 
+app.add_middleware(SessionMiddleware, secret_key=settings.session_secret)
 app.include_router(auth_router)
 
 if STATIC_DIR.exists():
@@ -74,7 +84,56 @@ def index(request: air.Request):
 
 @app.get("/events/new/")
 def event_form(request: air.Request):
-    return jinja(request, "event_form.html")
+    csrf_token = get_csrf_token(request)
+    return jinja(request, "event_form.html", {"csrf_token": csrf_token})
+
+
+@app.get("/manage/events/{uuid}")
+def manage_event_form(request: air.Request, uuid: str, db: Session = Depends(get_db)):
+    csrf_token = get_csrf_token(request)
+    event = db.query(Event).filter_by(uuid=uuid).first()
+
+    most_recent_message = (
+        db.query(EventMessage)
+        .filter_by(event_id=event.code)
+        .options(selectinload(EventMessage.images))
+        .order_by(desc(EventMessage.created_at))
+        .first()
+    )
+    return jinja(
+        request,
+        "manage_event.html",
+        {
+            "event": event,
+            "csrf_token": csrf_token,
+            "messages": [
+                most_recent_message,
+            ],
+        },
+    )
+
+
+@app.post("/manage/events/{uuid}")
+async def update_event(request: air.Request, uuid: str, db: Session = Depends(get_db)):
+    form_data: Mapping[str, str] = {k: str(v) for k, v in (await request.form()).items()}
+    csrf_token = form_data.pop("csrf_token", None)
+    session_token = request.session.get("csrf_token")
+    if not session_token or csrf_token != session_token:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CSRF failed")
+
+    serialized_data = EventUpdate(**form_data)
+    event = db.query(Event).filter_by(uuid=uuid).first()
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+
+    for field, value in serialized_data.dict(exclude_unset=True).items():
+        setattr(event, field, value)
+
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+
+    return RedirectResponse(f"/manage/events/{event.uuid}", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/events/{code}/")
@@ -90,6 +149,12 @@ def event_wall(request: air.Request, code: str):
         .all()
     )
 
+    uid = get_session_user_id(request)
+    if uid:
+        user: Optional[User] = db.query(User).filter_by(id=uid).first()
+    else:
+        user = None
+
     db.close()
 
     if not event:
@@ -101,14 +166,15 @@ def event_wall(request: air.Request, code: str):
         {
             "event": event,
             "messages": messages,
-            "event_url": f"{settings.host}/events/{event.code}",
+            "event_url": event.get_event_url(),
+            "user": user,
         },
     )
 
 
 @app.post("/events/")
 async def create_event(request: air.Request, user: User = Depends(current_user)):
-    create_data: dict[str, str] = dict(await request.form())
+    create_data: Mapping[str, str] = {k: str(v) for k, v in (await request.form()).items()}
     data = EventCreate(**create_data)
     created_at = datetime.now(timezone.utc)
 

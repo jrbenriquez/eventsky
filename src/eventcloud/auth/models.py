@@ -18,4 +18,10 @@ class User(Base):
     username = Column(String(50), unique=True, index=True, nullable=True)
     password_hash = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_staff = Column(Boolean, default=False, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+# TODO Create UserProfile here so that its easier to identify User
+# as the one used for signing in and UserProfile we can create different
+# tenant like sections or maybe just call them EventGroup
