@@ -16,7 +16,9 @@ from eventcloud.settings import settings
 class Event(Base):
     __tablename__ = "events"
 
-    uuid = Column(String, primary_key=True, default=lambda: str(uuid4()), index=True)
+    uuid = Column(
+        String, primary_key=True, default=lambda: str(uuid4()), index=True, nullable=True
+    )
     code = Column(String, index=True, unique=True, nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text)

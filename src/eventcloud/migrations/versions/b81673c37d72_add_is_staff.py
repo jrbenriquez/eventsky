@@ -1,8 +1,8 @@
 """add is_staff
 
-Revision ID: b90dc5e6e89b
-Revises: 344d9c5dedd0
-Create Date: 2025-09-19 23:27:41.077119
+Revision ID: b81673c37d72
+Revises: e17360e5d6a8
+Create Date: 2025-09-20 00:03:53.038369
 
 """
 
@@ -13,8 +13,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision: str = "b90dc5e6e89b"
-down_revision: Union[str, Sequence[str], None] = "344d9c5dedd0"
+revision: str = "b81673c37d72"
+down_revision: Union[str, Sequence[str], None] = "e17360e5d6a8"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
