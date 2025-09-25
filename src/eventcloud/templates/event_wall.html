@@ -496,6 +496,13 @@
     </script>
     <script>
       // COOLDOWN MECHANISM
+
+        let isCooldown = false;
+        const COOLDOWN_KEY = "lastMessageSentAt"; // localStorage key
+        let cooldownTimer = null;
+
+
+      // LISTENERS
         document.addEventListener("DOMContentLoaded", () => {
           const lastSent = parseInt(localStorage.getItem(COOLDOWN_KEY) || "0", 10);
           const remaining = lastSent + 15000 - Date.now();
@@ -503,8 +510,13 @@
             startSendCooldown(Math.ceil(remaining / 1000));
           }
         });
-        const COOLDOWN_KEY = "lastMessageSentAt"; // localStorage key
-        let cooldownTimer = null;
+        // Prevent Enter key submission during cooldown
+        document.getElementById('msgText').addEventListener('keydown', function(event) {
+          if (isCooldown && event.key === 'Enter') {
+            event.preventDefault();
+          }
+        });
+
 
         function ensureNotCooling(evt) {
           const lastSent = parseInt(localStorage.getItem(COOLDOWN_KEY) || "0", 10);
@@ -518,6 +530,7 @@
         }
 
         function startSendCooldown(seconds = 15) {
+          isCooldown = true
           const endAt = Date.now() + seconds * 1000;
           localStorage.setItem(COOLDOWN_KEY, Date.now().toString());
 
@@ -538,6 +551,7 @@
               cooldownTimer = null;
               btn.disabled = false;
               btn.innerHTML = btn.dataset.original;
+              isCooldown = false
             }
           }
 
