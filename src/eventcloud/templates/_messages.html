@@ -1,6 +1,8 @@
 {% for msg in messages %}
   {% include "_message_card.html" %}
 {% else %}
+    {% if not hide_empty_prompt %}
     <div id="empty-state"
          class="text-center mt-12 text-lg font-medium text-gray-700">No messages yet</div>
+    {% endif %}
 {% endfor %}
