@@ -1,11 +1,12 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
 
+from eventcloud.auth.models import *  # noqa
 from eventcloud.db import Base
-from eventcloud.models import *
-from eventcloud.auth.models import *
+from eventcloud.models import *  # noqa
 from eventcloud.settings import settings
 
 # this is the Alembic Config object, which provides

@@ -25,8 +25,15 @@
             </div>
         </header>
         <!-- Messages -->
+        <div class="overflow-y-auto">
+        <div id="pinnedMessages"
+              class="w-full flex-1 mx-auto pt-8 px-4 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {% with messages=pinned_messages %}
+              {% include "_messages.html" %}
+            {% endwith %}
+        </div>
         <main id="messages"
-              class="w-full flex-1 overflow-y-auto mx-auto pt-8 px-4 pb-36 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              class="w-full flex-1 mx-auto pt-8 px-4 pb-36 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               hx-ext="sse"
               sse-connect="/events/{{ event.code }}/stream"
               sse-swap="message"
@@ -40,6 +47,7 @@
                      hx-swap="outerHTML"></div>
             {% endif %}
         </main>
+        </div>
         <!-- Fixed bottom input -->
         <div class="sticky bottom-0 left-0 w-full bg-white py-3 shadow-inner">
             <form hx-post="/message/{{ event.code }}/"

@@ -39,6 +39,10 @@ watchdog = "^4.0.0"  # Optional: for auto-reload script
 alembic = "^1.16.4"
 pre-commit = "^4.3.0"
 ipdb = "^0.13.13"
+pytest = "^8.4.2"
+pytest-asyncio = "^1.2.0"
+httpx = "^0.28.1"
+beautifulsoup4 = "^4.13.5"
 
 [tool.ruff]
 line-length = 99
