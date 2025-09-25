@@ -3,30 +3,48 @@
     <title>{{ event.title }}</title>
 {% endblock %}
 {% block body %}
-  <body class="bg-gray-50 h-[100svh] flex flex-col items-center justify-center">
-      <div class="max-w-xl w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <h1 class="text-2xl font-bold text-gray-800 mb-4">Random Message</h1>
-          <div id="messageContainer" class="relative max-w-xl mx-auto mt-20 bg-white rounded-xl shadow-lg p-8 text-center">
-              <div id="overlay" class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center z-10">
-                  <button id="revealBtn" class="bg-white text-black px-6 py-3 rounded text-lg font-bold">
-                      Click to reveal random message
-                  </button>
-              </div>
-              <div id="countdown" class="absolute inset-0 flex items-center justify-center z-10 text-black text-6xl font-bold hidden"></div>
-              <div id="messageContent" class="opacity-0 transition-opacity duration-500">
-                  {% with msg=random_message %}
-                    {% include "_message_card.html" %}
-                  {% endwith %}
-              </div>
-          </div>
-          <button
-              class="bg-black text-white px-6 py-2 my-5 rounded hover:bg-gray-700"
-              onclick="window.location.reload()"
-          >
-              Get new random message
-          </button>
+<body class="bg-gray-50 min-h-[100svh] flex items-center justify-center px-4">
+  <!-- Centered card -->
+  <div class="mx-auto w-[95vw] sm:w-[92vw] lg:w-4/5 max-w-[1280px]
+              h-[80svh] lg:h-[85svh]
+              p-4 sm:p-6 lg:p-8
+              text-center flex flex-col  flex-1 gap-4">
+
+    <h1 class="text-2xl font-bold text-gray-800">Random Message</h1>
+    <h2 id="winnerText" class="opacity-0 transition-opacity duration-500 text-2xl font-bold text-gray-800">{{random_message.sender_name}}</h2>
+
+    <div id="messageContainer"
+         class="relative flex-1 w-full mt-2 bg-white rounded-xl shadow-lg
+                p-2 sm:p-4 overflow-hidden">
+      <div id="overlay"
+           class="absolute inset-0 bg-black flex items-center justify-center z-10">
+        <button id="revealBtn" class="bg-white text-black px-6 py-3 rounded text-lg font-bold">
+          Click to reveal random message
+        </button>
       </div>
-  </body>
+
+      <div id="countdown"
+           class="absolute inset-0 hidden flex items-center justify-center z-10
+                  text-black text-6xl font-bold"></div>
+
+      <div id="messageContent" class="opacity-0 transition-opacity duration-500 h-full w-full
+            flex items-center justify-center overflow-scroll noscroll">
+        <div class="max-w-none">
+          {% with msg=random_message %}
+            {% include "_message_card.html" %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+
+    <button class="bg-black text-white px-6 py-2 rounded hover:bg-gray-700 self-center"
+            onclick="window.location.reload()">
+      Get new random message
+    </button>
+
+    {% include "_lightbox.html" %}
+  </div>
+</body>
 {% endblock %}
 {% block scripts %}
 
@@ -36,6 +54,7 @@ const overlay = document.getElementById('overlay');
 const revealBtn = document.getElementById('revealBtn');
 const countdownDiv = document.getElementById('countdown');
 const messageContent = document.getElementById('messageContent');
+const winnerText = document.getElementById('winnerText');
 
 revealBtn.onclick = function() {
     overlay.style.display = 'none';
@@ -50,9 +69,21 @@ revealBtn.onclick = function() {
             clearInterval(interval);
             countdownDiv.style.display = 'none';
             messageContent.style.opacity = 1;
+            winnerText.style.opacity = 1;
             confetti();
         }
     }, 1000);
 };
 </script>
+<script>
+document.body.addEventListener("htmx:afterSwap", function (evt) {
+  // Limit scope: only inside the swapped content
+  const target = evt.detail.target;
+  target.querySelectorAll(".h-48").forEach(el => {
+    el.classList.remove("h-48");
+    el.classList.add("h-full");
+  });
+});
+</script>
+
 {% endblock %}

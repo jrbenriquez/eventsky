@@ -102,7 +102,7 @@ def toggle_pin(request: air.Request, uuid: str, db: Session = Depends(get_db)):
     return Response("", 200)
 
 
-@router.get("/events/{code}/random-message/")
+@router.get("/events/{code}/random/")
 def get_random_messaage(request: air.Request, code: str, db: Session = Depends(get_db)):
     event = db.query(Event).filter_by(code=code).first()
     sender_names = db.query(EventMessage.sender_name).filter_by(event_id=code, pinned=False).all()

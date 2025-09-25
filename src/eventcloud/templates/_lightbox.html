@@ -1,0 +1,51 @@
+<div
+  id="lightbox"
+  class="fixed inset-0 z-[9999] hidden bg-black/80 p-4 flex items-center justify-center"
+>
+  <button
+    id="lightbox-close"
+    class="absolute top-3 right-3 rounded-full bg-white/90 px-3 py-1 text-sm text-gray-800 shadow"
+  >
+    Close
+  </button>
+  <img
+    id="lightbox-img"
+    alt=""
+    class="max-w-full max-h-full rounded-lg object-contain select-none"
+  />
+</div>
+
+<script>
+  function openLightbox(src) {
+    const lb = document.getElementById("lightbox");
+    const img = document.getElementById("lightbox-img");
+    img.src = src;
+    lb.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+  }
+  function closeLightbox() {
+    const lb = document.getElementById("lightbox");
+    const img = document.getElementById("lightbox-img");
+    lb.classList.add("hidden");
+    img.src = "";
+    document.body.classList.remove("overflow-hidden");
+  }
+
+  // Open on click (delegated so HTMX/SSE inserts work)
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-lightbox-src]");
+    if (t) {
+      e.preventDefault();
+      openLightbox(t.getAttribute("data-lightbox-src") || t.src);
+    }
+  });
+
+  // Close on overlay click / button / Esc
+  document.getElementById("lightbox").addEventListener("click", (e) => {
+    if (e.target.id === "lightbox" || e.target.id === "lightbox-close")
+      closeLightbox();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLightbox();
+  });
+</script>

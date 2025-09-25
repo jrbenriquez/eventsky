@@ -17,7 +17,7 @@
       {% endif %}
 
     {% for image in msg.images %}
-        <div class="animate-pulse bg-gray-200 h-48 w-full rounded rounded flex items-center justify-center"
+        <div class="animate-pulse bg-gray-200 h-48 w-full rounded flex items-center justify-center"
              hx-get="/messageimage/?key={{ image.image_key }}"
              hx-trigger="load"
              hx-swap="outerHTML">
