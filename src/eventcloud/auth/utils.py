@@ -5,9 +5,13 @@ from fastapi import Request
 from passlib.context import CryptContext
 from starlette.responses import RedirectResponse
 
+from eventcloud.auth.models import User
+from eventcloud.db import SessionLocal
+
 pwd_ctx = CryptContext(schemes=["argon2"], deprecated="auto")
 
 SESSION_USER_KEY = "uid"
+SESSION_STAFF_KEY = "is_staff"
 
 
 def login_required(fn):
@@ -30,8 +34,17 @@ def verify_password(raw: str, hashed: str) -> bool:
     return pwd_ctx.verify(raw, hashed)
 
 
+def set_session_user_permissions(request: Request, user_id: int) -> None:
+    db = SessionLocal()
+    user = db.get(User, user_id)
+
+    request.session[SESSION_STAFF_KEY] = user.is_staff
+    db.close()
+
+
 def set_session_user(request: Request, user_id: int) -> None:
     request.session[SESSION_USER_KEY] = user_id
+    set_session_user_permissions(request, user_id)
 
 
 def clear_session_user(request: Request) -> None:

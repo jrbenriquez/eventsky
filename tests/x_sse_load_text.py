@@ -1,11 +1,3 @@
-import argparse
-import asyncio
-import sys
-import time
-import uuid
-
-import aiohttp
-
 """
 sse fanout load test (htmx-compatible)
 
@@ -37,6 +29,14 @@ notes:
 - the sse messages can be html or json; we only look for a run marker string.
 """
 
+import argparse
+import asyncio
+import sys
+import time
+import uuid
+
+import aiohttp
+
 
 def default_post_json(run_id: str, msg_id: int):
     # customize if your api needs different fields
@@ -44,9 +44,9 @@ def default_post_json(run_id: str, msg_id: int):
 
 
 def parse_args():
-    p = argparse.argumentparser()
-    p.add_argument("--base-url", required=true, help="base url, e.g. https://your.app")
-    p.add_argument("--code", required=true, help="event code used in your routes")
+    p = argparse.ArgumentParser()
+    p.add_argument("--base-url", required=True, help="base url, e.g. https://your.app")
+    p.add_argument("--code", required=True, help="event code used in your routes")
     p.add_argument("--clients", type=int, default=50, help="number of concurrent sse clients")
     p.add_argument("--senders", type=int, default=3, help="number of concurrent senders")
     p.add_argument("--messages-per-sender", type=int, default=2, help="messages per sender")
@@ -58,7 +58,7 @@ def parse_args():
     p.add_argument("--concurrency", type=int, default=5, help="http connection pool size")
     p.add_argument(
         "--post-json",
-        default=none,
+        default=None,
         help="python expression evaluated to build the post json. "
         "it will be eval'd with variables (run_id, msg_id). "
         "default uses {'text', 'sender_name'}.",
@@ -73,13 +73,13 @@ async def open_sse(
     very small sse client: reads the stream, collects messages containing run_marker.
     """
     try:
-        async with session.get(url, timeout=none) as resp:
+        async with session.get(url, timeout=None) as resp:
             if resp.status != 200:
                 print(f"[client {client_id}] http {resp.status} opening sse")
                 return
             buf = ""
             async for chunk, _ in resp.content.iter_chunks():
-                if chunk is none:
+                if chunk is None:
                     await asyncio.sleep(0)
                     continue
                 buf += chunk.decode("utf-8", errors="ignore")
@@ -97,9 +97,9 @@ async def open_sse(
                         # extract msg_id if present like: [lt-<run>] message #<id>
                         # fallback: just record the whole line
                         inbox.add(data)
-    except asyncio.cancellederror:
+    except asyncio.CancelledError:
         pass
-    except exception as e:
+    except Exception as e:
         print(f"[client {client_id}] sse error: {e}")
 
 
@@ -110,7 +110,7 @@ async def sender(
     start_id: int,
     count: int,
     delay: float = 0.2,
-    record=none,
+    record=None,
 ):
     """
     sends `count` messages, spacing them by `delay` seconds.
@@ -121,7 +121,7 @@ async def sender(
         t0 = time.perf_counter()
         async with session.post(url, json=payload) as resp:
             text = await resp.text()
-            if record is not none:
+            if record is not None:
                 record.append((msg_id, resp.status, time.perf_counter() - t0))
             if resp.status >= 300:
                 print(f"[sender] post {url} -> {resp.status} {text[:120]}")
@@ -147,7 +147,7 @@ async def main():
         def payload_builder(msg_id: int):
             return default_post_json(run_id, msg_id)
 
-    timeout = aiohttp.clienttimeout(total=none, sock_read=none, sock_connect=30)
+    timeout = aiohttp.clienttimeout(total=None, sock_read=None, sock_connect=30)
     conn = aiohttp.tcpconnector(limit=args.concurrency)
     async with aiohttp.clientsession(timeout=timeout, connector=conn) as session:
         # start sse clients
@@ -171,7 +171,7 @@ async def main():
                         session,
                         post_url,
                         payload_builder=lambda mid, _k=k: default_post_json(run_id, mid)
-                        if args.post_json is none
+                        if args.post_json is None
                         else eval(args.post_json, {"run_id": run_id, "msg_id": mid}),
                         start_id=next_id,
                         count=per_sender,
@@ -201,7 +201,7 @@ async def main():
         # cancel clients (stop the open streams)
         for t in client_tasks:
             t.cancel()
-        await asyncio.gather(*client_tasks, return_exceptions=true)
+        await asyncio.gather(*client_tasks, return_exceptions=True)
 
         # report
         received_counts = [
@@ -229,7 +229,8 @@ async def main():
             rtts = [rt for _, _, rt in send_records]
             ok = sum(1 for s in statuses if s < 300)
             print(
-                f"post success: {ok}/{len(statuses)}, median post rtt: {sorted(rtts)[len(rtts) // 2]:.3f}s"
+                f"post success: {ok}/{len(statuses)}, median post"
+                f"rtt: {sorted(rtts)[len(rtts) // 2]:.3f}s"
             )
 
 
@@ -241,5 +242,5 @@ def inbox_texts(inbox_set):
 if __name__ == "__main__":
     try:
         asyncio.run(main())
-    except keyboardinterrupt:
+    except KeyboardInterrupt:
         sys.exit(130)

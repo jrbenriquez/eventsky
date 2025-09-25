@@ -1,6 +1,7 @@
 from pydantic import Field
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -30,9 +31,10 @@ class Settings(BaseSettings):
     #
     host: str = Field(default=..., validation_alias="HOST")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=[".env.local", ".env"],
+        env_file_encoding="utf-8",
+    )
 
 
 settings = Settings()

@@ -1,15 +1,22 @@
 import air
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from sqlalchemy.orm import Session as SASession
 from air.responses import RedirectResponse
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import Form
+from fastapi import HTTPException
+from fastapi import Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session as SASession
+
+from eventcloud.db import get_db  # your SessionLocal dependency
+from eventcloud.utils import jinja
 
 from .models import User
 from .schema import UserOut
-from .utils import hash_password, verify_password, set_session_user
-from eventcloud.db import get_db  # your SessionLocal dependency
-from eventcloud.utils import jinja
+from .utils import hash_password
+from .utils import set_session_user
+from .utils import verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -32,9 +39,7 @@ def signup(
         if uname_taken:
             raise HTTPException(status_code=400, detail="Username already taken.")
 
-    user = User(
-        email=email_norm, username=username, password_hash=hash_password(password)
-    )
+    user = User(email=email_norm, username=username, password_hash=hash_password(password))
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -60,9 +65,7 @@ def login(
 
     if not user or not verify_password(password, user.password_hash):
         # Store error in session (flash-like)
-        request.session["login_error"] = (
-            "Last attempt was invalid email/username or password"
-        )
+        request.session["login_error"] = "Last attempt was invalid email/username or password"
         return RedirectResponse(url="/auth/login", status_code=303)
 
     if not user.is_active:
