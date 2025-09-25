@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block head %}
+    <title>{{ event.title }}</title>
+{% endblock %}
+{% block body %}
+  <body class="bg-gray-50 h-[100svh] flex flex-col items-center justify-center">
+      <div class="max-w-xl w-full bg-white rounded-xl shadow-lg p-8 text-center">
+          <h1 class="text-2xl font-bold text-gray-800 mb-4">Random Message</h1>
+          <div id="messageContainer" class="relative max-w-xl mx-auto mt-20 bg-white rounded-xl shadow-lg p-8 text-center">
+              <div id="overlay" class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center z-10">
+                  <button id="revealBtn" class="bg-white text-black px-6 py-3 rounded text-lg font-bold">
+                      Click to reveal random message
+                  </button>
+              </div>
+              <div id="countdown" class="absolute inset-0 flex items-center justify-center z-10 text-black text-6xl font-bold hidden"></div>
+              <div id="messageContent" class="opacity-0 transition-opacity duration-500">
+                  {% with msg=random_message %}
+                    {% include "_message_card.html" %}
+                  {% endwith %}
+              </div>
+          </div>
+          <button
+              class="bg-black text-white px-6 py-2 my-5 rounded hover:bg-gray-700"
+              onclick="window.location.reload()"
+          >
+              Get new random message
+          </button>
+      </div>
+  </body>
+{% endblock %}
+{% block scripts %}
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+const overlay = document.getElementById('overlay');
+const revealBtn = document.getElementById('revealBtn');
+const countdownDiv = document.getElementById('countdown');
+const messageContent = document.getElementById('messageContent');
+
+revealBtn.onclick = function() {
+    overlay.style.display = 'none';
+    countdownDiv.style.display = 'flex';
+    let count = 3;
+    countdownDiv.textContent = count;
+    const interval = setInterval(() => {
+        count -= 1;
+        if (count > 0) {
+            countdownDiv.textContent = count;
+        } else {
+            clearInterval(interval);
+            countdownDiv.style.display = 'none';
+            messageContent.style.opacity = 1;
+            confetti();
+        }
+    }, 1000);
+};
+</script>
+{% endblock %}

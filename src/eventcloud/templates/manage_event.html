@@ -171,6 +171,12 @@
       <p class="mt-1 text-sm text-slate-500">Recent posts for this event.</p>
     </div>
 
+    <div id="pinnedMessages"
+          class="w-full flex-1 mx-auto pt-8 px-4 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {% with messages=pinned_messages %}
+          {% include "_messages.html" %}
+        {% endwith %}
+    </div>
     <div
       id="messages"
       class="w-full flex-1 overflow-y-auto mx-auto pt-8 px-4 space-y-3 max-w-xl sm:max-w-2xl lg:max-w-3xl scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"

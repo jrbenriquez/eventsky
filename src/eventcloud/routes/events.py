@@ -1,7 +1,6 @@
 from collections.abc import Mapping
 from datetime import datetime
 from datetime import timezone
-from typing import Optional
 
 import air
 from air.responses import RedirectResponse
@@ -15,7 +14,6 @@ from sqlalchemy.orm import Session
 
 from eventcloud.auth.deps import current_user
 from eventcloud.auth.models import User
-from eventcloud.auth.utils import get_session_user_id
 from eventcloud.db import get_db
 from eventcloud.db import SessionLocal
 from eventcloud.event_broker import broker
@@ -48,7 +46,8 @@ def manage_event_form(
     csrf_token = get_csrf_token(request)
     event = db.query(Event).filter_by(uuid=uuid).first()
 
-    messages = EventMessage.get_messages_for_event(db, event.code, limit=1, all=True)
+    messages = EventMessage.get_messages_for_event(db, event.code, limit=1, pinned=False)
+    pinned_messages = EventMessage.get_messages_for_event(db, event_code=event.code, pinned=True)
 
     return jinja(
         request,
@@ -57,6 +56,7 @@ def manage_event_form(
             "event": event,
             "csrf_token": csrf_token,
             "messages": messages,
+            "pinned_messages": pinned_messages,
             "user": user,
         },
     )
@@ -90,11 +90,6 @@ def event_wall(request: air.Request, code: str, db: Session = Depends(get_db)):
     event = db.query(Event).filter_by(code=code).first()
     messages = EventMessage.get_messages_for_event(db, event_code=code, pinned=False)
     pinned_messages = EventMessage.get_messages_for_event(db, event_code=code, pinned=True)
-    uid = get_session_user_id(request)
-    if uid:
-        user: Optional[User] = db.query(User).filter_by(id=uid).first()
-    else:
-        user = None
 
     if not event:
         return Response("Event not found", 400)
@@ -107,7 +102,6 @@ def event_wall(request: air.Request, code: str, db: Session = Depends(get_db)):
             "messages": messages,
             "pinned_messages": pinned_messages,
             "event_url": event.get_event_url(),
-            "user": user,
         },
     )
 

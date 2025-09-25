@@ -1,3 +1,5 @@
+import random
+
 import air
 from air.responses import Response
 from fastapi import APIRouter
@@ -9,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from eventcloud.db import get_db
 from eventcloud.db import SessionLocal
+from eventcloud.models import Event
 from eventcloud.models import EventMessage
 from eventcloud.r2 import get_signed_url_for_key
 from eventcloud.utils import jinja
@@ -97,3 +100,46 @@ def toggle_pin(request: air.Request, uuid: str, db: Session = Depends(get_db)):
     db.commit()
 
     return Response("", 200)
+
+
+@router.get("/events/{code}/random-message/")
+def get_random_messaage(request: air.Request, code: str, db: Session = Depends(get_db)):
+    event = db.query(Event).filter_by(code=code).first()
+    sender_names = db.query(EventMessage.sender_name).filter_by(event_id=code, pinned=False).all()
+
+    if not sender_names:
+        return Response("No messages", 204)
+
+    unique_senders = {name for (name,) in sender_names}
+    random_sender = random.choice(list(unique_senders))
+
+    # Prioritize messages with text and images
+    messages_with_images = (
+        db.query(EventMessage)
+        .filter(
+            EventMessage.event_id == code,
+            EventMessage.sender_name == random_sender,
+            EventMessage.pinned.is_(False),
+            EventMessage.images.any(),
+        )
+        .all()
+    )
+
+    if messages_with_images:
+        random_message = random.choice(messages_with_images)
+    else:
+        messages = (
+            db.query(EventMessage)
+            .filter_by(event_id=code, sender_name=random_sender, pinned=False)
+            .all()
+        )
+        random_message = random.choice(messages)
+
+    return jinja(
+        request,
+        "event_random_message.html",
+        {
+            "event": event,
+            "random_message": random_message,
+        },
+    )

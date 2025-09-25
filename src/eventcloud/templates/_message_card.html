@@ -1,0 +1,45 @@
+
+{% if request.session.is_staff and ('/manage/events/' in request.path or '/manage/events/' in request.headers['hx-current-url'])  %}
+      <div class="flex justify-end" x-data="{pinned: {{msg.pinned|lower}}}">
+        <button
+          type="button"
+          :class="pinned ? 'text-yellow-500 hover:text-gray-400' : 'text-gray-400 hover:text-yellow-500'"
+          :title="pinned ? 'Pinned message' : 'Pin message'"
+          hx-post="/message/{{msg.uuid}}/pin/"
+          hx-swap="none"
+          x-on:click="pinned=!pinned"
+        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+          <path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 0 1-1.085.67L12 18.089l-7.165 3.583A.75.75 0 0 1 3.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93Z" clip-rule="evenodd" />
+        </svg>
+        </button>
+      </div>
+      {% endif %}
+
+    {% for image in msg.images %}
+        <div class="animate-pulse bg-gray-200 h-48 w-full rounded rounded flex items-center justify-center"
+             hx-get="/messageimage/?key={{ image.image_key }}"
+             hx-trigger="load"
+             hx-swap="outerHTML">
+            <center>
+                <svg class="size-5 animate-spin text-black"
+                     xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+            </center>
+        </div>
+    {% endfor %}
+    <div class="message-text block bg-white shadow rounded pl-6 p-3 text-gray-800 w-full">
+    <!-- Pin button -->
+      {{ msg.text }}
+      <div class="flex flex-col items-end mt-2">
+        <div class="font-semibold text-gray-900">{{msg.sender_name or "Guest"}}</div>
+        <div class="msgTime text-xs text-gray-600">
+          {{ msg.created_at }}
+        </div>
+      </div>
+    </div>
