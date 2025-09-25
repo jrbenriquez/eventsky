@@ -2,4 +2,6 @@
 **/.env
 **/__pycache__/**
 *.db
+*.db.bak
 *.pyc
+**/node_modules/
