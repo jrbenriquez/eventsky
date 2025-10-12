@@ -38,8 +38,7 @@
       {{ msg.text }}
       <div class="flex flex-col items-end mt-2">
         <div class="font-semibold text-gray-900">{{msg.sender_name or "Guest"}}</div>
-        <div class="msgTime text-xs text-gray-600">
-          {{ msg.created_at }}
+        <div class="msgTime text-xs text-gray-600" data-utc="{{msg.created_at}}">
         </div>
       </div>
     </div>
