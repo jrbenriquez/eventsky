@@ -9,6 +9,7 @@ class EventBase(BaseModel):
     title: str
     description: str
     code: str
+    posting_messages_disabled: bool
 
 
 class EventCreate(EventBase): ...

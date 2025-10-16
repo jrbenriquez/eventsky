@@ -48,6 +48,7 @@
             {% endif %}
         </main>
         </div>
+        {% if not event.posting_messages_disabled %}
         <!-- Fixed bottom input -->
         <div class="sticky bottom-0 left-0 w-full bg-white py-3 shadow-inner">
             <form hx-post="/message/{{ event.code }}/"
@@ -148,6 +149,7 @@
                 </div>
             </form>
         </div>
+        {% endif %}
         {% include "_lightbox.html" %}
         <!-- Overlay for guest name -->
         <div id="nameOverlay"
@@ -393,6 +395,7 @@
         }
       }
 
+      {% if not event.posting_messages_disabled %}
       function ensureGuestName(evt){
           const name = (localStorage.getItem('guestName') || '').trim();
           if (!name){
@@ -404,6 +407,7 @@
           ensureNameInForm();
           return true;
       }
+      {% endif %}
       function ensureNameInForm(){
         const name = (localStorage.getItem('guestName') || '').trim();
         const field = document.getElementById('guestNameField');

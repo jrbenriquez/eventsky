@@ -30,6 +30,10 @@ class Event(Base):
     description = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
+    posting_messages_disabled: Mapped[bool | None] = mapped_column(
+        Boolean, default=False, nullable=True
+    )
+
     def get_event_url(self):
         return f"{settings.host}/events/{self.code}"
 
