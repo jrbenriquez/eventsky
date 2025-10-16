@@ -358,9 +358,13 @@
       // Use this one if we are going with more improvements
       // if (btn) btn.disabled = !(textOk && guestNameOk && storedNameOk && storedName === guestName);
     }
+
+      {% if not event.posting_messages_disabled %}
       // init on load
       updateSendDisabled();
+      {% endif %}
     </script>
+    {% if not event.posting_messages_disabled %}
     <script>
       // Save guest name script
       document.addEventListener("DOMContentLoaded", () => {
@@ -395,7 +399,6 @@
         }
       }
 
-      {% if not event.posting_messages_disabled %}
       function ensureGuestName(evt){
           const name = (localStorage.getItem('guestName') || '').trim();
           if (!name){
@@ -407,7 +410,6 @@
           ensureNameInForm();
           return true;
       }
-      {% endif %}
       function ensureNameInForm(){
         const name = (localStorage.getItem('guestName') || '').trim();
         const field = document.getElementById('guestNameField');
@@ -458,6 +460,7 @@
         }
       }
     </script>
+    {% endif %}
     <script>
       dayjs.extend(dayjs_plugin_utc);
 
@@ -494,11 +497,14 @@
           }
         });
         // Prevent Enter key submission during cooldown
-        document.getElementById('msgText').addEventListener('keydown', function(event) {
-          if (isCooldown && event.key === 'Enter') {
-            event.preventDefault();
-          }
-        });
+        const msgTxtElement = document.getElementById('msgText')
+        if (msgTxtElement) {
+          msgTxtElement.addEventListener('keydown', function(event) {
+            if (isCooldown && event.key === 'Enter') {
+              event.preventDefault();
+            }
+          });
+        }
 
 
         function ensureNotCooling(evt) {
