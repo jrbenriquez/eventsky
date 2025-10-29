@@ -1,4 +1,4 @@
-
+{% with preview_mode=('/preview/' in request.path or '/preview/' in request.headers['hx-current-url']) %}
 {% if request.session.is_staff and ('/manage/events/' in request.path or '/manage/events/' in request.headers['hx-current-url'])  %}
       <div class="flex justify-end" x-data="{pinned: {{msg.pinned|lower}}}">
         <button
@@ -37,8 +37,9 @@
     <!-- Pin button -->
       {{ msg.text }}
       <div class="flex flex-col items-end mt-2">
-        <div class="font-semibold text-gray-900">{{msg.sender_name or "Guest"}}</div>
+        <div class="font-semibold text-gray-900">{% if preview_mode %} {{msg.preview_sender_name or "Guest"}} {% else %} {{msg.sender_name or "Guest"}} {% endif %}</div>
         <div class="msgTime text-xs text-gray-600" data-utc="{{msg.created_at}}">
         </div>
       </div>
     </div>
+{% endwith %}

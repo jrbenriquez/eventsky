@@ -25,6 +25,7 @@ class Event(Base):
     __tablename__ = "events"
 
     uuid = Column(String, default=lambda: str(uuid4()), index=True, nullable=True)
+    preview_id = Column(String, default=lambda: str(uuid4()), nullable=True)
     code = Column(String, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(Text)
@@ -103,6 +104,11 @@ class EventMessage(Base):
             )
         return messages
 
+    @property
+    def preview_sender_name(self):
+        name = self.sender_name
+        return name[0] + "*" * len(name[1:]) if name else ""
+
 
 class EventMessageImage(Base):
     __tablename__ = "eventmessageimages"
@@ -110,5 +116,6 @@ class EventMessageImage(Base):
     uuid = Column(String, primary_key=True, default=lambda: str(uuid4()), index=True)
     event_message_id = Column(String, ForeignKey("eventmessages.uuid"), nullable=False)
     image_key = Column(String, nullable=False)
+    blurred_image_key = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     event_message = relationship("EventMessage", back_populates="images")

@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from datetime import datetime
 from datetime import timezone
+from uuid import uuid4
 
 import air
 from air.responses import RedirectResponse
@@ -45,6 +46,10 @@ def manage_event_form(
 ):
     csrf_token = get_csrf_token(request)
     event = db.query(Event).filter_by(uuid=uuid).first()
+    if not event.preview_id:
+        event.preview_id = str(uuid4())
+        db.add(event)
+        db.commit()
 
     messages = EventMessage.get_messages_for_event(db, event.code, limit=1, pinned=False)
     pinned_messages = EventMessage.get_messages_for_event(db, event_code=event.code, pinned=True)
@@ -90,6 +95,27 @@ def event_wall(request: air.Request, code: str, db: Session = Depends(get_db)):
     event = db.query(Event).filter_by(code=code).first()
     messages = EventMessage.get_messages_for_event(db, event_code=code, pinned=False)
     pinned_messages = EventMessage.get_messages_for_event(db, event_code=code, pinned=True)
+
+    if not event:
+        return Response("Event not found", 400)
+
+    return jinja(
+        request,
+        "event_wall.html",
+        {
+            "event": event,
+            "messages": messages,
+            "pinned_messages": pinned_messages,
+            "event_url": event.get_event_url(),
+        },
+    )
+
+
+@router.get("/preview/{preview_id}/")
+def preview_event_wall(request: air.Request, preview_id: str, db: Session = Depends(get_db)):
+    event = db.query(Event).filter_by(preview_id=preview_id).first()
+    messages = EventMessage.get_messages_for_event(db, event_code=event.code, pinned=False)
+    pinned_messages = EventMessage.get_messages_for_event(db, event_code=event.code, pinned=True)
 
     if not event:
         return Response("Event not found", 400)

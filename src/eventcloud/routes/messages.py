@@ -14,6 +14,7 @@ from eventcloud.db import SessionLocal
 from eventcloud.models import Event
 from eventcloud.models import EventMessage
 from eventcloud.r2 import get_signed_url_for_key
+from eventcloud.utils import get_blurred_url_for_image_key
 from eventcloud.utils import jinja
 
 router = APIRouter(tags=["messages"])
@@ -21,8 +22,14 @@ router = APIRouter(tags=["messages"])
 
 @router.get("/messageimage/")
 def render_image(request: air.Request, key: str):
-    url = get_signed_url_for_key(key)
-    return jinja(request, "_message_image.html", {"url": url})
+    headers = dict(request.scope["headers"])
+    referrer = headers[b"referer"]
+    preview_mode = "/preview/" in referrer.decode()
+    if preview_mode:
+        url = get_blurred_url_for_image_key(key)
+    else:
+        url = get_signed_url_for_key(key)
+    return jinja(request, "_message_image.html", {"url": url, "preview_mode": preview_mode})
 
 
 @router.get("/messageimagepreview/")

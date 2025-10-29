@@ -49,3 +49,18 @@ def get_signed_url_for_key(image_key: str, expires_in: int = 3600):
         return url
     except Exception as e:
         raise RuntimeError(f"Failed to generate presigned URL: {e}")
+
+
+def download_object_from_r2(
+    key,
+):
+    # Download the original image from R2
+    response = r2_client.get_object(Bucket=settings.r2_bucket_name, Key=key)
+    obj_data = response["Body"].read()
+    return obj_data
+
+
+def upload_to_r2(key, body, content_type):
+    r2_client.put_object(
+        Bucket=settings.r2_bucket_name, Key=key, Body=body, ContentType=content_type
+    )
