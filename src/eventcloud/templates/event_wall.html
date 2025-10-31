@@ -582,4 +582,14 @@
           a.remove();
         }
     </script>
+
+{% with preview_mode=('/preview/' in request.path or '/preview/' in request.headers['hx-current-url']) %}
+  {% if preview_mode %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    alert('Images are blurred when in Preview mode. Some of the images changed orientation after blurring sorry bout that :)');
+});
+  </script>
+  {% endif %}
+{% endwith %}
 {% endblock %}
