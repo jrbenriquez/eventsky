@@ -4,7 +4,7 @@ services:
     name: eventsky
     env: python
     region: singapore
-    plan: starter
+    plan: free
     autoDeploy: true
     healthCheckPath: /healthz
 
